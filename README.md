@@ -1,7 +1,7 @@
 # organicneuralnetwork
 Advancements in NN are getting increasingly contrived. My ONN ("Organic Neural Network") is a return to first principles, building a new NN architecture from foundational Neuroscience principles - AND NO GRADIENT DESCENT.
 
-![field_of_vision in terminal](https://github.com/taylormcclenny/organicneuralnetwork/blob/master/images/img_triangle_196.png)
+![field_of_vision in terminal](https://github.com/taylormcclenny/organicneuralnetwork/blob/master/images/field_of_vision_terminal.png)
 
 GOAL:  This AI looks around simple images, focusing on what's interesting. It has a small "field of vision", mimicing our (human) focal and peripheral vision. This serves as inputs to simply let the AI know (1) if it's looking at something and (2) where it should look next to focus on what's interesting. This is the first step in our own (human) visual process. The eye sends signals to the occipital lobe where it determines if it's "looking at something of interest". Based on the interest and basic signal characterisitics from the various neurons of the retina, the occipital lobe decides where to next send (like a dispatcher) the signal (for identification, movement tracking, etc.)
 
