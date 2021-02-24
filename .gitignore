@@ -1,0 +1,4 @@
+.env
+__pycache__
+z_archive/
+vision_field_map_notes.json

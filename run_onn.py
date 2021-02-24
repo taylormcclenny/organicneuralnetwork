@@ -722,68 +722,141 @@ if __name__ == "__main__":
     y_coord = Y_COORD
 
 
-    # Get New Field of Vision Inputs
-    fc_001 = pixel_matrix[y_coord][x_coord]
-    fc_002 = pixel_matrix[y_coord-1][x_coord]
-    fc_003 = pixel_matrix[y_coord-1][x_coord+1]
-    fc_004 = pixel_matrix[y_coord][x_coord+1]
-    fc_005 = pixel_matrix[y_coord+1][x_coord+1]
-    fc_006 = pixel_matrix[y_coord+1][x_coord]
-    fc_007 = pixel_matrix[y_coord+1][x_coord-1]
-    fc_008 = pixel_matrix[y_coord][x_coord-1]
-    fc_009 = pixel_matrix[y_coord-1][x_coord-1]
-    pr_010 = pixel_matrix[y_coord-3][x_coord]
-    pr_011 = pixel_matrix[y_coord-3][x_coord+2]
-    pr_012 = pixel_matrix[y_coord-2][x_coord+3]
-    pr_013 = pixel_matrix[y_coord][x_coord+3]
-    pr_014 = pixel_matrix[y_coord+2][x_coord+3]
-    pr_015 = pixel_matrix[y_coord+3][x_coord+2]
-    pr_016 = pixel_matrix[y_coord+3][x_coord]
-    pr_017 = pixel_matrix[y_coord+3][x_coord-2]
-    pr_018 = pixel_matrix[y_coord+2][x_coord-3]
-    pr_019 = pixel_matrix[y_coord][x_coord-3]
-    pr_020 = pixel_matrix[y_coord-2][x_coord-3]
-    pr_021 = pixel_matrix[y_coord-3][x_coord-2]
+    # Set Field of Vision Pixel Inputs
+    fp_001 = pixel_matrix[y_coord][x_coord]                 # Focal Pixel - Spiral out from center, clockwise
+    fp_002 = pixel_matrix[y_coord-1][x_coord]
+    fp_003 = pixel_matrix[y_coord-1][x_coord+1]
+    fp_004 = pixel_matrix[y_coord][x_coord+1]
+    fp_005 = pixel_matrix[y_coord+1][x_coord+1]
+    fp_006 = pixel_matrix[y_coord+1][x_coord]
+    fp_007 = pixel_matrix[y_coord+1][x_coord-1]
+    fp_008 = pixel_matrix[y_coord][x_coord-1]
+    fp_009 = pixel_matrix[y_coord-1][x_coord-1]
+    
+    pp_010 = pixel_matrix[y_coord-2][x_coord]               # Peripheral Pixel - Continue numbering from Focal Pixels
+    pp_011 = pixel_matrix[y_coord-2][x_coord+1]             # Continue spiraling out, clockwise, from 12 o'clock
+    pp_012 = pixel_matrix[y_coord-2][x_coord+2]
 
-    print(pixel_matrix[y_coord])
+    pp_013 = pixel_matrix[y_coord-1][x_coord+2]
+    pp_014 = pixel_matrix[y_coord][x_coord+2]
+    pp_015 = pixel_matrix[y_coord+1][x_coord+2]
+
+    pp_016 = pixel_matrix[y_coord+2][x_coord+2]
+    pp_017 = pixel_matrix[y_coord+2][x_coord+1]
+    pp_018 = pixel_matrix[y_coord+2][x_coord]
+    pp_019 = pixel_matrix[y_coord+2][x_coord-1]
+    pp_020 = pixel_matrix[y_coord+2][x_coord-2]
+
+    pp_021 = pixel_matrix[y_coord+1][x_coord-2]
+    pp_022 = pixel_matrix[y_coord][x_coord-2]
+    pp_023 = pixel_matrix[y_coord-1][x_coord-2]
+
+    pp_024 = pixel_matrix[y_coord-2][x_coord-2]
+    pp_025 = pixel_matrix[y_coord-2][x_coord-1]             # this ends the Inner Peripheral Pixels, go to Outer PP
+
+    pp_026 = pixel_matrix[y_coord-3][x_coord]               # this starts the Outer PP
+    pp_027 = pixel_matrix[y_coord-3][x_coord+1]
+    pp_028 = pixel_matrix[y_coord-3][x_coord+2]
+    pp_029 = pixel_matrix[y_coord-3][x_coord+3]
+
+    pp_030 = pixel_matrix[y_coord-2][x_coord+3]
+    pp_031 = pixel_matrix[y_coord-1][x_coord+3]
+    pp_032 = pixel_matrix[y_coord][x_coord+3]
+    pp_033 = pixel_matrix[y_coord+1][x_coord+3]
+    pp_034 = pixel_matrix[y_coord+2][x_coord+3]
+
+    pp_035 = pixel_matrix[y_coord+3][x_coord+3]
+    pp_036 = pixel_matrix[y_coord+3][x_coord+2]
+    pp_037 = pixel_matrix[y_coord+3][x_coord+1]
+    pp_038 = pixel_matrix[y_coord+3][x_coord]
+    pp_039 = pixel_matrix[y_coord+3][x_coord-1]
+    pp_040 = pixel_matrix[y_coord+3][x_coord-2]
+    pp_041 = pixel_matrix[y_coord+3][x_coord-3]
+
+    pp_042 = pixel_matrix[y_coord+2][x_coord-3]
+    pp_043 = pixel_matrix[y_coord+1][x_coord-3]
+    pp_044 = pixel_matrix[y_coord][x_coord-3]
+    pp_045 = pixel_matrix[y_coord-1][x_coord-3]
+    pp_046 = pixel_matrix[y_coord-2][x_coord-3]
+
+    pp_047 = pixel_matrix[y_coord-3][x_coord-3]
+    pp_048 = pixel_matrix[y_coord-3][x_coord-2]
+    pp_049 = pixel_matrix[y_coord-3][x_coord-1]             # this ends the Outer Peripheral Pixels
 
     # Print what the AI is seeing
     try:
         print(f"\n\ntimestep: t{t}")
         print(f"center_of_fv: fv_x{x_coord}_y{y_coord}")
         print("cofv_signal:", pixel_matrix[y_coord][x_coord])
-        print("pv_nrth:", "[-------]", [format(pr_021, '.3f')], "[-------]", [format(pr_010, '.3f')], "[-------]", [format(pr_011, '.3f')], "[-------]")
-        print("pv_nrth:", [format(pr_020, '.3f')], "[-------]", "[-------]", "[-------]", "[-------]", "[-------]", [format(pr_012, '.3f')])
-        print("fv_view:", "[-------]", "[-------]", [format(fc_009, '.3f')], [format(fc_002, '.3f')], [format(fc_003, '.3f')], "[-------]", "[-------]")
-        print("        ", [format(pr_019, '.3f')], "[-------]", [format(fc_008, '.3f')], [format(fc_001, '.3f')], [format(fc_004, '.3f')], "[-------]", [format(pr_013, '.3f')])
-        print("        ", "[-------]", "[-------]", [format(fc_007, '.3f')], [format(fc_006, '.3f')], [format(fc_005, '.3f')], "[-------]", "[-------]") 
-        print("pv_sth: ", [format(pr_018, '.3f')], "[-------]", "[-------]", "[-------]", "[-------]", "[-------]", [format(pr_014, '.3f')])
-        print("pv_sth: ", "[-------]", [format(pr_017, '.3f')], "[-------]", [format(pr_016, '.3f')], "[-------]", [format(pr_015, '.3f')], "[-------]")
+        print("pv_nrth:", [format(pp_047, '.3f')], [format(pp_048, '.3f')], [format(pp_049, '.3f')], [format(pp_026, '.3f')], [format(pp_027, '.3f')], [format(pp_028, '.3f')], [format(pp_029, '.3f')])
+        print("pv_nrth:", [format(pp_046, '.3f')], [format(pp_024, '.3f')], [format(pp_025, '.3f')], [format(pp_010, '.3f')], [format(pp_011, '.3f')], [format(pp_012, '.3f')], [format(pp_030, '.3f')])
+        print("fv_view:", [format(pp_045, '.3f')], [format(pp_023, '.3f')], [format(fp_009, '.3f')], [format(fp_002, '.3f')], [format(fp_003, '.3f')], [format(pp_013, '.3f')], [format(pp_031, '.3f')])
+        print("        ", [format(pp_044, '.3f')], [format(pp_022, '.3f')], [format(fp_008, '.3f')], [format(fp_001, '.3f')], [format(fp_004, '.3f')], [format(pp_014, '.3f')], [format(pp_032, '.3f')])
+        print("        ", [format(pp_043, '.3f')], [format(pp_021, '.3f')], [format(fp_007, '.3f')], [format(fp_006, '.3f')], [format(fp_005, '.3f')], [format(pp_015, '.3f')], [format(pp_033, '.3f')]) 
+        print("pv_sth: ", [format(pp_042, '.3f')], [format(pp_020, '.3f')], [format(pp_019, '.3f')], [format(pp_018, '.3f')], [format(pp_017, '.3f')], [format(pp_016, '.3f')], [format(pp_034, '.3f')])
+        print("pv_sth: ", [format(pp_041, '.3f')], [format(pp_040, '.3f')], [format(pp_039, '.3f')], [format(pp_038, '.3f')], [format(pp_037, '.3f')], [format(pp_036, '.3f')], [format(pp_035, '.3f')])
     except IndexError:
         print("pv_out: ", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]")
 
     signal_dictionary = {   # set the signal
-        'fc_001': [pixel_matrix[y_coord][x_coord]],
-        'fc_002': [pixel_matrix[y_coord-1][x_coord]],
-        'fc_003': [pixel_matrix[y_coord-1][x_coord+1]],
-        'fc_004': [pixel_matrix[y_coord][x_coord+1]],
-        'fc_005': [pixel_matrix[y_coord+1][x_coord+1]],
-        'fc_006': [pixel_matrix[y_coord+1][x_coord]],
-        'fc_007': [pixel_matrix[y_coord+1][x_coord-1]],
-        'fc_008': [pixel_matrix[y_coord][x_coord-1]],
-        'fc_009': [pixel_matrix[y_coord-1][x_coord-1]],
-        'pr_010': [pixel_matrix[y_coord-3][x_coord]],
-        'pr_011': [pixel_matrix[y_coord-3][x_coord+2]],
-        'pr_012': [pixel_matrix[y_coord-2][x_coord+3]],
-        'pr_013': [pixel_matrix[y_coord][x_coord+3]],
-        'pr_014': [pixel_matrix[y_coord+2][x_coord+3]],
-        'pr_015': [pixel_matrix[y_coord+3][x_coord+2]],
-        'pr_016': [pixel_matrix[y_coord+3][x_coord]],
-        'pr_017': [pixel_matrix[y_coord+3][x_coord-2]],
-        'pr_018': [pixel_matrix[y_coord+2][x_coord-3]],
-        'pr_019': [pixel_matrix[y_coord][x_coord-3]],
-        'pr_020': [pixel_matrix[y_coord-2][x_coord-3]],
-        'pr_021': [pixel_matrix[y_coord-3][x_coord-2]],
+        'fc_001': [fp_001],
+        'fc_002': [fp_001],
+        'fc_003': [fp_002],
+        'fc_004': [fp_002],
+        'fc_005': [fp_003],
+        'fc_006': [fp_003],
+        'fc_007': [fp_004],
+        'fc_008': [fp_004],
+        'fc_009': [fp_005],
+        'fc_010': [fp_005],
+        'fc_011': [fp_006],
+        'fc_012': [fp_006],
+        'fc_013': [fp_007],
+        'fc_014': [fp_007],
+        'fc_015': [fp_008],
+        'fc_016': [fp_008],
+        'fc_017': [fp_009],
+        'fc_018': [fp_009],
+        'pr_019': [pp_010],
+        'pr_020': [pp_011],
+        'pr_021': [pp_012],
+        'pr_022': [pp_013],
+        'pr_023': [pp_014],
+        'pr_024': [pp_015],
+        'pr_025': [pp_016],
+        'pr_026': [pp_017],
+        'pr_027': [pp_018],
+        'pr_028': [pp_019],
+        'pr_029': [pp_020],
+        'pr_030': [pp_021],
+        'pr_031': [pp_022],
+        'pr_032': [pp_023],
+        'pr_033': [pp_024],
+        'pr_034': [pp_025],
+        'pr_035': [pp_026],
+        'pr_036': [pp_027],
+        'pr_037': [pp_028],
+        'pr_038': [pp_029],
+        'pr_039': [pp_030],
+        'pr_040': [pp_031],
+        'pr_041': [pp_032],
+        'pr_042': [pp_033],
+        'pr_043': [pp_034],
+        'pr_044': [pp_035],
+        'pr_045': [pp_036],
+        'pr_046': [pp_037],
+        'pr_047': [pp_038],
+        'pr_048': [pp_039],
+        'pr_049': [pp_040],
+        'pr_050': [pp_041],
+        'pr_051': [pp_042],
+        'pr_052': [pp_043],
+        'pr_053': [pp_044],
+        'pr_054': [pp_045],
+        'pr_055': [pp_046],
+        'pr_056': [pp_047],
+        'pr_057': [pp_048],
+        'pr_058': [pp_049],
     }
 
     direction_lookup = {    
