@@ -1,483 +1,21 @@
 
 
 import time
+import ast
 from PIL import Image
 import concurrent.futures
 
 
-X_COORD = 7 -1         # '-1' for 0-th Index
-Y_COORD = 7 -1         # '-1' for 0-th Index
-EPOCHS = 6             # Number of times to run training
+X_COORD = 5             # For reading index of Image Pixel Matrix (List of lists)
+Y_COORD = 5             # (!) At sampling COORD is subtracted by 1 ('-1') due to referencing 0-th Indexed List
+EPOCHS = 6              # Number of times to run training
 
-''' The Neural Network '''
-# Standard Use Dictionary for Testing
-starting_post_synaptic_neighbors_dictionary = {   # neuron_to_post-synaptic
 
-    'fc_001': [
-        ['bp_001'],
-        [0.876], 
-        ['x4', 'y4'],
-    ],
-    'fc_002': [
-        ['bp_002'],
-        [0.853],
-        ['x4', 'y3'],
-    ],
-    'fc_003': [
-        ['bp_003'],
-        [0.952],
-        ['x5', 'y3'],
-    ],
-    'fc_004': [
-        ['bp_004'],
-        [0.869],
-        ['x5', 'y4'],
-    ],
-    'fc_005': [
-        ['bp_005'],
-        [0.977],
-        ['x5', 'y5'],
-    ],
-    'fc_006': [
-        ['bp_006'],
-        [0.944],
-        ['x5', 'y4'],
-    ],
-    'fc_007': [
-        ['bp_007'],
-        [0.894],
-        ['x5', 'y3'],
-    ],
-    'fc_008': [
-        ['bp_008'],
-        [0.941],
-        ['x4', 'y3'],
-    ],
-    'fc_009': [
-        ['bp_009'],
-        [0.895],
-        ['x3', 'y3'],
-    ],
-    'pr_010': [
-        ['bp_021', 'bp_010', 'bp_011'],
-        [0.862, 0.854, 0.945],
-        ['x4', 'y1'],
-    ],
-    'pr_011': [
-        ['bp_010', 'bp_011', 'bp_012'],
-        [0.88, 0.864, 0.868],
-        ['x6', 'y1'],
-    ],
-    'pr_012': [
-        ['bp_011', 'bp_012', 'bp_013'],
-        [0.898, 0.928, 0.858],
-        ['x7', 'y2'],
-    ],
-    'pr_013': [
-        ['bp_012', 'bp_013', 'bp_014'],
-        [0.89, 0.894, 0.972],
-        ['x7', 'y4'],
-    ],
-    'pr_014': [
-        ['bp_013', 'bp_014', 'bp_015'],
-        [0.987, 0.916, 0.857],
-        ['x7', 'y6'],
-    ],
-    'pr_015': [
-        ['bp_014', 'bp_015', 'bp_016'],
-        [0.852, 0.908, 0.906],
-        ['x6', 'y7'],
-    ],
-    'pr_016': [
-        ['bp_015', 'bp_016', 'bp_017'],
-        [0.967, 0.939, 0.982],
-        ['x4', 'y7'],
-    ],
-    'pr_017': [
-        ['bp_016', 'bp_017', 'bp_018'],
-        [0.981, 0.915, 0.984],
-        ['x2', 'y7'],
-    ],
-    'pr_018': [
-        ['bp_017', 'bp_018', 'bp_019'],
-        [0.934, 0.912, 0.903],
-        ['x1', 'y6'],
-    ],
-    'pr_019': [
-        ['bp_018', 'bp_019', 'bp_020'],
-        [0.916, 0.873, 0.935],
-        ['x1', 'y4'],
-    ],
-    'pr_020': [
-        ['bp_019', 'bp_020', 'bp_021'],
-        [0.943, 0.89, 0.94],
-        ['x1', 'y2'],
-    ],
-    'pr_021': [
-        ['bp_020', 'bp_021', 'bp_010'],
-        [0.922, 0.934, 0.916],
-        ['x2', 'y1'],
-    ],
-    'bp_001': [
-        ['gn_001'],
-        [-0.672]
-    ],
-    'bp_002': [
-        ['gn_002'],
-        [0.686]
-    ],
-    'bp_003': [
-        ['gn_003'],
-        [0.711]
-    ],
-    'bp_004': [
-        ['gn_004'],
-        [-0.666]
-    ],
-    'bp_005': [
-        ['gn_005'],
-        [0.744]
-    ],
-    'bp_006': [
-        ['gn_006'],
-        [-0.967]
-    ],
-    'bp_007': [
-        ['gn_007'],
-        [0.883]
-    ],
-    'bp_008': [
-        ['gn_008'],
-        [0.684]
-    ],
-    'bp_009': [
-        ['gn_009'],
-        [-0.949]
-    ],
-    'bp_010': [
-        ['gn_021', 'gn_010', 'gn_011'],
-        [-0.873, -0.754, 0.866]
-    ],
-    'bp_011': [
-        ['gn_010', 'gn_011', 'gn_012'],
-        [0.957, 0.737, 0.987]
-    ],
-    'bp_012': [
-        ['gn_011', 'gn_012', 'gn_013'],
-        [-0.929, -0.979, -0.923]
-    ],
-    'bp_013': [
-        ['gn_012', 'gn_013', 'gn_014'],
-        [-0.861, -0.743, -0.887]
-    ],
-    'bp_014': [
-        ['gn_013', 'gn_014', 'gn_015'],
-        [0.94, 0.886, -0.671]
-    ],
-    'bp_015': [
-        ['gn_014', 'gn_015', 'gn_016'],
-        [0.842, 0.678, -0.729]
-    ],
-    'bp_016': [
-        ['gn_015', 'gn_016', 'gn_017'],
-        [0.806, 0.902, -0.795]
-    ],
-    'bp_017': [
-        ['gn_016', 'gn_017', 'gn_018'],
-        [-0.973, -0.978, 0.842]
-    ],
-    'bp_018': [
-        ['gn_017', 'gn_018', 'gn_019'],
-        [-0.819, 0.722, 0.959]
-    ],
-    'bp_019': [
-        ['gn_018', 'gn_019', 'gn_020'],
-        [0.81, -0.708, -0.951]
-    ],
-    'bp_020': [
-        ['gn_019', 'gn_020', 'gn_021'],
-        [-0.785, -0.807, 0.904]
-    ],
-    'bp_021': [
-        ['gn_020', 'gn_021', 'gn_010'],
-        [-0.876, 0.735, 0.765]
-    ],
-    'gn_001': [
-        ['on_001'],
-        [0.783]
-    ],
-    'gn_002': [
-        ['on_002'],
-        [0.841]
-    ],
-    'gn_003': [
-        ['on_003'],
-        [0.868]
-    ],
-    'gn_004': [
-        ['on_004'],
-        [0.906]
-    ],
-    'gn_005': [
-        ['on_005'],
-        [-0.872]
-    ],
-    'gn_006': [
-        ['on_006'],
-        [-0.677]
-    ],
-    'gn_007': [
-        ['on_007'],
-        [0.697]
-    ],
-    'gn_008': [
-        ['on_008'],
-        [-0.949]
-    ],
-    'gn_009': [
-        ['on_009'],
-        [0.796]
-    ],
-    'gn_010': [
-        ['on_033', 'on_010', 'on_011', 'on_034'],
-        [0.455, -0.758, 0.691]
-    ],
-    'gn_011': [
-        ['on_010', 'on_011', 'on_012', 'on_035'],
-        [0.402, 0.398, 0.453]
-    ],
-    'gn_012': [
-        ['on_011', 'on_012', 'on_013', 'on_035'],
-        [0.5, 0.634, 0.631]
-    ],
-    'gn_013': [
-        ['on_012', 'on_013', 'on_014', 'on_036'],
-        [-0.312, -0.378, -0.506]
-    ],
-    'gn_014': [
-        ['on_013', 'on_014', 'on_015', 'on_037'],
-        [-0.286, 0.273, -0.517]
-    ],
-    'gn_015': [
-        ['on_014', 'on_015', 'on_016', 'on_037'],
-        [-0.213, 0.632, 0.401]
-    ],
-    'gn_016': [
-        ['on_015', 'on_016', 'on_017', 'on_038'],
-        [0.69, 0.296, 0.275]
-    ],
-    'gn_017': [
-        ['on_016', 'on_017', 'on_018', 'on_039'],
-        [0.552, 0.597, -0.428]
-    ],
-    'gn_018': [
-        ['on_017', 'on_018', 'on_019', 'on_039'],
-        [-0.417, -0.632, 0.677]
-    ],
-    'gn_019': [
-        ['on_018', 'on_019', 'on_020', 'on_040'],
-        [-0.631, -0.52, 0.748]
-    ],
-    'gn_020': [
-        ['on_019', 'on_020', 'on_021', 'on_041'],
-        [0.218, -0.46, -0.213]
-    ],
-    'gn_021': [
-        ['on_020', 'on_021', 'on_022', 'on_041'],
-        [0.606, 0.513, -0.566]
-    ],
-    'on_001': [
-        ['dd_001'],
-        [0.379]
-    ],
-    'on_002': [
-        ['dd_001', 'dd_002'],
-        [-0.778, -0.21]
-    ],
-    'on_003': [
-        ['dd_001', 'dd_002', 'dd_003', 'dd_004'],
-        [-0.604, 0.485, -0.683, 0.773]
-    ],
-    'on_004': [
-        ['dd_001', 'dd_004'],
-        [-0.366, 0.313]
-    ],
-    'on_005': [
-        ['dd_001', 'dd_004', 'dd_005', 'dd_006'],
-        [-0.384, -0.313, 0.497, -0.544]
-    ],
-    'on_006': [
-        ['dd_001', 'dd_006'],
-        [-0.291, 0.649]
-    ],
-    'on_007': [
-        ['dd_001', 'dd_006', 'dd_007', 'dd_008'],
-        [-0.531, 0.301, 0.795, 0.201]
-    ],
-    'on_008': [
-        ['dd_001', 'dd_008'],
-        [-0.615, -0.602]
-    ],
-    'on_009': [
-        ['dd_001', 'dd_002', 'dd_008', 'dd_009'],
-        [0.306, 0.393, 0.422, -0.64]
-    ],
-    'on_010': [
-        ['dd_002'],
-        [-0.547]
-    ],
-    'on_011': [
-        ['dd_002', 'dd_003'],
-        [0.481, -0.561]
-    ],
-    'on_012': [
-        ['dd_003'],
-        [0.381]
-    ],
-    'on_013': [
-        ['dd_003'],
-        [-0.464]
-    ],
-    'on_014': [
-        ['dd_003'],
-        [0.6]
-    ],
-    'on_015': [
-        ['dd_003', 'dd_004'],
-        [0.547, -0.31]
-    ],
-    'on_016': [
-        ['dd_004'],
-        [-0.662]
-    ],
-    'on_017': [
-        ['dd_004', 'dd_005'],
-        [-0.621, -0.358]
-    ],
-    'on_018': [
-        ['dd_005'],
-        [0.8]
-    ],
-    'on_019': [
-        ['dd_005'],
-        [-0.535]
-    ],
-    'on_020': [
-        ['dd_005'],
-        [0.616]
-    ],
-    'on_021': [
-        ['dd_005', 'dd_006'],
-        [0.228, -0.413]
-    ],
-    'on_022': [
-        ['dd_006'],
-        [0.416]
-    ],
-    'on_023': [
-        ['dd_006', 'dd_007'],
-        [-0.655, -0.695]
-    ],
-    'on_024': [
-        ['dd_007'],
-        [0.308]
-    ],
-    'on_025': [
-        ['dd_007'],
-        [-0.34]
-    ],
-    'on_026': [
-        ['dd_007'],
-        [0.698]
-    ],
-    'on_027': [
-        ['dd_007', 'dd_008'],
-        [0.416, -0.639]
-    ],
-    'on_028': [
-        ['dd_008'],
-        [0.362]
-    ],
-    'on_029': [
-        ['dd_008', 'dd_009'],
-        [-0.234, 0.48]
-    ],
-    'on_030': [
-        ['dd_009'],
-        [0.299]
-    ],
-    'on_031': [
-        ['dd_009'],
-        [0.739]
-    ],
-    'on_032': [
-        ['dd_009'],
-        [-0.555]
-    ],
-    'on_033': [
-        ['dd_002', 'dd_009'],
-        [0.57, -0.222]
-    ],
-    'on_034': [
-        ['dd_002'],
-        [-0.724]
-    ],
-    'on_035': [
-        ['dd_003'],
-        [-0.278]
-    ],
-    'on_036': [
-        ['dd_004'],
-        [0.377]
-    ],
-    'on_037': [
-        ['dd_005'],
-        [0.477]
-    ],
-    'on_038': [
-        ['dd_006'],
-        [0.491]
-    ],
-    'on_039': [
-        ['dd_007'],
-        [0.205]
-    ],
-    'on_040': [
-        ['dd_008'],
-        [-0.464]
-    ],
-    'on_041': [
-        ['dd_009'],
-        [-0.651]
-    ],
-    'dd_001': [
-        [0,0],
-    ],
-    'dd_002': [
-        [0,1],
-    ],
-    'dd_003': [
-        [1,1],
-    ],
-    'dd_004': [
-        [1,0],
-    ],
-    'dd_005': [
-        [1,-1],
-    ],
-    'dd_006': [
-        [0,-1],
-    ],
-    'dd_007': [
-        [-1,-1],
-    ],
-    'dd_008': [
-        [-1,0],
-    ],
-    'dd_009': [
-        [-1,1],
-    ],
-}
+''' Load the Neural Network '''
+with open("onn_map.json", "r") as file:
+    starting_post_synaptic_neighbors_dictionary = file.read()
+# Convert to Python Dictionary
+starting_post_synaptic_neighbors_dictionary = ast.literal_eval(starting_post_synaptic_neighbors_dictionary)
 
 
 ''' Read the Image '''
@@ -521,23 +59,33 @@ for pixel in pixel_list:
 print("]")
 
 
-''' All the Functions '''
+''' Signal Functions '''
 # Generate Signal through 1 Neuron
 def generate_signal(neuron_from_signal_dictionary):   # nucleus
 
     neuron = neuron_from_signal_dictionary   # neuron id
     neuron_id = neuron
-    # print("signal_dictionary - gen func:", signal_dictionary)
     signal_input = signal_dictionary[neuron]   # neuron's signal
-
+    print("Neuron & Signal Input:", neuron_id, signal_input)
+    
     signal = sum(signal_input)
+    print("Neuron & Signal:", neuron_id, signal)
 
-    post_synaptic_neighbors = starting_post_synaptic_neighbors_dictionary[neuron][0]
-    synapse_values = starting_post_synaptic_neighbors_dictionary[neuron][1]
+    if signal > 0:
+        
+        post_synaptic_neighbors = starting_post_synaptic_neighbors_dictionary[neuron][0]
+        synapse_values = starting_post_synaptic_neighbors_dictionary[neuron][1]
+        signal_outputs = [synapse_value * signal for synapse_value in synapse_values]   # multiply signal by array of synapse_values
 
-    signal_outputs = [synapse_value * signal for synapse_value in synapse_values]   # multiply signal by array of synapse_values
+    else:
 
+        signal_outputs = None
+        post_synaptic_neighbors = None
+        neuron_id = None
+        signal = None
+    
     return signal_outputs, post_synaptic_neighbors, neuron_id, signal
+
 
 # Use the Signal to determine which direction to move
 def chose_direction(neurons_firing):
@@ -567,15 +115,15 @@ def chose_direction(neurons_firing):
 def main():
 
     t = 1
-    x_coord = X_COORD
-    y_coord = Y_COORD
+    x_coord = X_COORD -1
+    y_coord = Y_COORD -1
 
     for _ in range(EPOCHS):
 
         ''' Signal Loop '''
         while signal_dictionary:
 
-            if 'dd_001' in signal_dictionary:
+            if any(key in direction_lookup for key in signal_dictionary):
                 new_x_move, new_y_move = chose_direction(list(signal_dictionary.keys()))
                 print(f"New_x_move, New_y_move: {new_x_move}x, {new_y_move}y")
                 signal_dictionary.clear()               
@@ -590,9 +138,13 @@ def main():
                     for neuron in concurrent.futures.as_completed(futures):
                         signal_outputs, post_synaptic_neighbors, neuron_id, signal = neuron.result()
 
-                        for neighbor, signal_output in zip(post_synaptic_neighbors, signal_outputs):
-                            new_signal_dict.setdefault(neighbor,[]).append(signal_output)
-                        update_neuron_dict[neuron_id] = signal
+                        if signal is not None:
+                            for neighbor, signal_output in zip(post_synaptic_neighbors, signal_outputs):
+                                new_signal_dict.setdefault(neighbor,[]).append(signal_output)
+                            update_neuron_dict[neuron_id] = signal
+                        
+                        else:
+                            pass
 
                 # Update signasignal_dictionaryl_dictionary with which neurons to fire next
                 signal_dictionary.clear()
@@ -605,104 +157,206 @@ def main():
         y_move=new_y_move
         x_coord+=x_move
         y_coord+=y_move
-        print(f"\n\nMOVING FOCUS... NEW TARGET: {x_coord}x, {y_coord}y")
+        print(f"\n\nMOVING FOCUS... NEW TARGET: {x_coord+1}x, {y_coord+1}y")
 
-        # Get New Field of Vision Inputs
-        fc_001 = pixel_matrix[y_coord][x_coord]
-        fc_002 = pixel_matrix[y_coord-1][x_coord]
-        fc_003 = pixel_matrix[y_coord-1][x_coord+1]
-        fc_004 = pixel_matrix[y_coord][x_coord+1]
-        fc_005 = pixel_matrix[y_coord+1][x_coord+1]
-        fc_006 = pixel_matrix[y_coord+1][x_coord]
-        fc_007 = pixel_matrix[y_coord+1][x_coord-1]
-        fc_008 = pixel_matrix[y_coord][x_coord-1]
-        fc_009 = pixel_matrix[y_coord-1][x_coord-1]
-        try:        
-            pr_010 = pixel_matrix[y_coord-3][x_coord]
-        except IndexError:
-            pr_010 = 0.000
-        try:
-            pr_011 = pixel_matrix[y_coord-3][x_coord+2]
-        except IndexError:
-            pr_011 = 0.000
-        try:
-            pr_012 = pixel_matrix[y_coord-2][x_coord+3]
-        except IndexError:
-            pr_012 = 0.000
-        try:
-            pr_013 = pixel_matrix[y_coord][x_coord+3]
-        except IndexError:
-            pr_013 = 0.000
-        try:
-            pr_014 = pixel_matrix[y_coord+2][x_coord+3]
-        except IndexError:
-            pr_014 = 0.000
-        try:
-            pr_015 = pixel_matrix[y_coord+3][x_coord+2]
-        except IndexError:
-            pr_015 = 0.000
-        try:
-            pr_016 = pixel_matrix[y_coord+3][x_coord]
-        except IndexError:
-            pr_016 = 0.000
-        try:
-            pr_017 = pixel_matrix[y_coord+3][x_coord-2]
-        except IndexError:
-            pr_017 = 0.000
-        try:
-            pr_018 = pixel_matrix[y_coord+2][x_coord-3]
-        except IndexError:
-            pr_018 = 0.000
-        try:
-            pr_019 = pixel_matrix[y_coord][x_coord-3]
-        except IndexError:
-            pr_019 = 0.000
-        try:
-            pr_020 = pixel_matrix[y_coord-2][x_coord-3]
-        except IndexError:
-            pr_020 = 0.000
-        try:
-            pr_021 = pixel_matrix[y_coord-3][x_coord-2]
-        except IndexError:
-            pr_021 = 0.000
+        px_001 = pixel_matrix[y_coord-4][x_coord-4]         # Section 1 - Top Left
+        px_002 = pixel_matrix[y_coord-4][x_coord-3]
+        px_003 = pixel_matrix[y_coord-4][x_coord-2]
+        px_004 = pixel_matrix[y_coord-3][x_coord-4]
+        px_005 = pixel_matrix[y_coord-3][x_coord-3]
+        px_006 = pixel_matrix[y_coord-3][x_coord-2]
+        px_007 = pixel_matrix[y_coord-2][x_coord-4]
+        px_008 = pixel_matrix[y_coord-2][x_coord-3]
+        px_009 = pixel_matrix[y_coord-2][x_coord-2]
+
+        px_010 = pixel_matrix[y_coord-4][x_coord-1]         # Section 2 - Top Middle
+        px_011 = pixel_matrix[y_coord-4][x_coord+0]         
+        px_012 = pixel_matrix[y_coord-4][x_coord+1]
+        px_013 = pixel_matrix[y_coord-3][x_coord-1] 
+        px_014 = pixel_matrix[y_coord-3][x_coord+0] 
+        px_015 = pixel_matrix[y_coord-3][x_coord+1]
+        px_016 = pixel_matrix[y_coord-2][x_coord-1] 
+        px_017 = pixel_matrix[y_coord-2][x_coord+0] 
+        px_018 = pixel_matrix[y_coord-2][x_coord+1]
+
+        px_019 = pixel_matrix[y_coord-4][x_coord+2]         # Section 3 - Top Right
+        px_020 = pixel_matrix[y_coord-4][x_coord+3]
+        px_021 = pixel_matrix[y_coord-4][x_coord+4]
+        px_022 = pixel_matrix[y_coord-3][x_coord+2]
+        px_023 = pixel_matrix[y_coord-3][x_coord+3]
+        px_024 = pixel_matrix[y_coord-3][x_coord+4]
+        px_025 = pixel_matrix[y_coord-2][x_coord+2]         
+        px_026 = pixel_matrix[y_coord-2][x_coord+3]             
+        px_027 = pixel_matrix[y_coord-2][x_coord+4]
+
+        px_028 = pixel_matrix[y_coord-1][x_coord-4]         # Section 4 - Middle Left
+        px_029 = pixel_matrix[y_coord-1][x_coord-3] 
+        px_030 = pixel_matrix[y_coord-1][x_coord-2] 
+        px_031 = pixel_matrix[y_coord+0][x_coord-4] 
+        px_032 = pixel_matrix[y_coord+0][x_coord-3] 
+        px_033 = pixel_matrix[y_coord+0][x_coord-2] 
+        px_034 = pixel_matrix[y_coord+1][x_coord-4] 
+        px_035 = pixel_matrix[y_coord+1][x_coord-3] 
+        px_036 = pixel_matrix[y_coord+1][x_coord-2]
+
+        px_037 = pixel_matrix[y_coord-1][x_coord-1]         # Section 5 - Center
+        px_038 = pixel_matrix[y_coord-1][x_coord+0]
+        px_039 = pixel_matrix[y_coord-1][x_coord+1]
+        px_040 = pixel_matrix[y_coord+0][x_coord-1] 
+        px_041 = pixel_matrix[y_coord+0][x_coord+0]         ### Middle of Focal Vision
+        px_042 = pixel_matrix[y_coord+0][x_coord+1]
+        px_043 = pixel_matrix[y_coord+1][x_coord-1] 
+        px_044 = pixel_matrix[y_coord+1][x_coord+0]
+        px_045 = pixel_matrix[y_coord+1][x_coord+1]
+        
+        px_046 = pixel_matrix[y_coord-1][x_coord+2]         # Section 6 - Middle Right
+        px_047 = pixel_matrix[y_coord-1][x_coord+3]
+        px_048 = pixel_matrix[y_coord-1][x_coord+4]
+        px_049 = pixel_matrix[y_coord+0][x_coord+2]
+        px_050 = pixel_matrix[y_coord+0][x_coord+3]
+        px_051 = pixel_matrix[y_coord+0][x_coord+4]
+        px_052 = pixel_matrix[y_coord+1][x_coord+2]         
+        px_053 = pixel_matrix[y_coord+1][x_coord+3]             
+        px_054 = pixel_matrix[y_coord+1][x_coord+4] 
+
+        px_055 = pixel_matrix[y_coord+2][x_coord-4]         # Section 7 - Bottom Left
+        px_056 = pixel_matrix[y_coord+2][x_coord-3]
+        px_057 = pixel_matrix[y_coord+2][x_coord-2]
+        px_058 = pixel_matrix[y_coord+3][x_coord-4]
+        px_059 = pixel_matrix[y_coord+3][x_coord-3]
+        px_060 = pixel_matrix[y_coord+3][x_coord-2]
+        px_061 = pixel_matrix[y_coord+4][x_coord-4]
+        px_062 = pixel_matrix[y_coord+4][x_coord-3]
+        px_063 = pixel_matrix[y_coord+4][x_coord-2]
+
+        px_064 = pixel_matrix[y_coord+2][x_coord-1]         # Section 8 - Bottom Middle
+        px_065 = pixel_matrix[y_coord+2][x_coord+0]         
+        px_066 = pixel_matrix[y_coord+2][x_coord+1]
+        px_067 = pixel_matrix[y_coord+3][x_coord-1] 
+        px_068 = pixel_matrix[y_coord+3][x_coord+0] 
+        px_069 = pixel_matrix[y_coord+3][x_coord+1]
+        px_070 = pixel_matrix[y_coord+4][x_coord-1] 
+        px_071 = pixel_matrix[y_coord+4][x_coord+0] 
+        px_072 = pixel_matrix[y_coord+4][x_coord+1]
+
+        px_073 = pixel_matrix[y_coord+2][x_coord+2]         # Section 9 - Bottom Right
+        px_074 = pixel_matrix[y_coord+2][x_coord+3]
+        px_075 = pixel_matrix[y_coord+2][x_coord+4]
+        px_076 = pixel_matrix[y_coord+3][x_coord+2]
+        px_077 = pixel_matrix[y_coord+3][x_coord+3]
+        px_078 = pixel_matrix[y_coord+3][x_coord+4]
+        px_079 = pixel_matrix[y_coord+4][x_coord+2]         
+        px_080 = pixel_matrix[y_coord+4][x_coord+3]             
+        px_081 = pixel_matrix[y_coord+4][x_coord+4]
 
         # Print what the AI is seeing
         try:
             print(f"\n\ntimestep: t{t}")
-            print(f"center_of_fv: fv_x{x_coord}_y{y_coord}")
+            print(f"center_of_fv: fv_x{x_coord+1}_y{y_coord+1}")
             print("cofv_signal:", pixel_matrix[y_coord][x_coord])
-            print("pv_nrth:", "[-------]", [format(pr_021, '.3f')], "[-------]", [format(pr_010, '.3f')], "[-------]", [format(pr_011, '.3f')], "[-------]")
-            print("pv_nrth:", [format(pr_020, '.3f')], "[-------]", "[-------]", "[-------]", "[-------]", "[-------]", [format(pr_012, '.3f')])
-            print("fv_view:", "[-------]", "[-------]", [format(fc_009, '.3f')], [format(fc_002, '.3f')], [format(fc_003, '.3f')], "[-------]", "[-------]")
-            print("        ", [format(pr_019, '.3f')], "[-------]", [format(fc_008, '.3f')], [format(fc_001, '.3f')], [format(fc_004, '.3f')], "[-------]", [format(pr_013, '.3f')])
-            print("        ", "[-------]", "[-------]", [format(fc_007, '.3f')], [format(fc_006, '.3f')], [format(fc_005, '.3f')], "[-------]", "[-------]") 
-            print("pv_sth: ", [format(pr_018, '.3f')], "[-------]", "[-------]", "[-------]", "[-------]", "[-------]", [format(pr_014, '.3f')])
-            print("pv_sth: ", "[-------]", [format(pr_017, '.3f')], "[-------]", [format(pr_016, '.3f')], "[-------]", [format(pr_015, '.3f')], "[-------]")
+            print("periph :", [format(px_001, '.3f')], [format(px_002, '.3f')], [format(px_003, '.3f')], [format(px_010, '.3f')], [format(px_011, '.3f')], [format(px_012, '.3f')], [format(px_019, '.3f')], [format(px_020, '.3f')], [format(px_021, '.3f')])
+            print("periph :", [format(px_004, '.3f')], [format(px_005, '.3f')], [format(px_006, '.3f')], [format(px_013, '.3f')], [format(px_014, '.3f')], [format(px_015, '.3f')], [format(px_022, '.3f')], [format(px_023, '.3f')], [format(px_024, '.3f')])
+            print("periph :", [format(px_007, '.3f')], [format(px_008, '.3f')], [format(px_009, '.3f')], [format(px_016, '.3f')], [format(px_017, '.3f')], [format(px_018, '.3f')], [format(px_025, '.3f')], [format(px_026, '.3f')], [format(px_027, '.3f')])
+            print("focal  :", [format(px_028, '.3f')], [format(px_029, '.3f')], [format(px_030, '.3f')], [format(px_037, '.3f')], [format(px_038, '.3f')], [format(px_039, '.3f')], [format(px_046, '.3f')], [format(px_047, '.3f')], [format(px_048, '.3f')])
+            print("focal  :", [format(px_031, '.3f')], [format(px_032, '.3f')], [format(px_033, '.3f')], [format(px_040, '.3f')], [format(px_041, '.3f')], [format(px_042, '.3f')], [format(px_049, '.3f')], [format(px_050, '.3f')], [format(px_051, '.3f')])
+            print("focal  :", [format(px_034, '.3f')], [format(px_035, '.3f')], [format(px_036, '.3f')], [format(px_043, '.3f')], [format(px_044, '.3f')], [format(px_045, '.3f')], [format(px_052, '.3f')], [format(px_053, '.3f')], [format(px_054, '.3f')]) 
+            print("periph :", [format(px_055, '.3f')], [format(px_056, '.3f')], [format(px_057, '.3f')], [format(px_064, '.3f')], [format(px_065, '.3f')], [format(px_066, '.3f')], [format(px_073, '.3f')], [format(px_074, '.3f')], [format(px_075, '.3f')])
+            print("periph :", [format(px_058, '.3f')], [format(px_059, '.3f')], [format(px_060, '.3f')], [format(px_067, '.3f')], [format(px_068, '.3f')], [format(px_069, '.3f')], [format(px_076, '.3f')], [format(px_077, '.3f')], [format(px_078, '.3f')])
+            print("periph :", [format(px_061, '.3f')], [format(px_062, '.3f')], [format(px_063, '.3f')], [format(px_070, '.3f')], [format(px_071, '.3f')], [format(px_072, '.3f')], [format(px_079, '.3f')], [format(px_080, '.3f')], [format(px_081, '.3f')])
         except IndexError:
             print("pv_out: ", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]")
 
-        new_signal_dictionary = {                       # Put in NEW Signal Dictionary
-            'fc_002': [fc_002],
-            'fc_001': [fc_001],
-            'fc_003': [fc_003],
-            'fc_004': [fc_004],
-            'fc_005': [fc_005],
-            'fc_006': [fc_006],
-            'fc_007': [fc_007],
-            'fc_008': [fc_008],
-            'fc_009': [fc_009],
-            'pr_010': [pr_010],
-            'pr_011': [pr_011],
-            'pr_012': [pr_012],
-            'pr_013': [pr_013],
-            'pr_014': [pr_014],
-            'pr_015': [pr_015],
-            'pr_016': [pr_016],
-            'pr_017': [pr_017],
-            'pr_018': [pr_018],
-            'pr_019': [pr_019],
-            'pr_020': [pr_020],
-            'pr_021': [pr_021],
+        new_signal_dictionary = {                               # Put in NEW Signal Dictionary
+
+            'px_001' : [pixel_matrix[y_coord-4][x_coord-4]],         # Section 1 - Top Left
+            'px_003' : [pixel_matrix[y_coord-4][x_coord-2]],
+            'px_002' : [pixel_matrix[y_coord-4][x_coord-3]],
+            'px_004' : [pixel_matrix[y_coord-3][x_coord-4]],
+            'px_005' : [pixel_matrix[y_coord-3][x_coord-3]],
+            'px_006' : [pixel_matrix[y_coord-3][x_coord-2]],
+            'px_007' : [pixel_matrix[y_coord-2][x_coord-4]],
+            'px_008' : [pixel_matrix[y_coord-2][x_coord-3]],
+            'px_009' : [pixel_matrix[y_coord-2][x_coord-2]],
+
+            'px_010' : [pixel_matrix[y_coord-4][x_coord-1]],         # Section 2 - Top Middle
+            'px_011' : [pixel_matrix[y_coord-4][x_coord+0]],         
+            'px_012' : [pixel_matrix[y_coord-4][x_coord+1]],
+            'px_013' : [pixel_matrix[y_coord-3][x_coord-1]], 
+            'px_014' : [pixel_matrix[y_coord-3][x_coord+0]], 
+            'px_015' : [pixel_matrix[y_coord-3][x_coord+1]],
+            'px_016' : [pixel_matrix[y_coord-2][x_coord-1]], 
+            'px_017' : [pixel_matrix[y_coord-2][x_coord+0]], 
+            'px_018' : [pixel_matrix[y_coord-2][x_coord+1]],
+
+            'px_019' : [pixel_matrix[y_coord-4][x_coord+2]],         # Section 3 - Top Right
+            'px_020' : [pixel_matrix[y_coord-4][x_coord+3]],
+            'px_021' : [pixel_matrix[y_coord-4][x_coord+4]],
+            'px_022' : [pixel_matrix[y_coord-3][x_coord+2]],
+            'px_023' : [pixel_matrix[y_coord-3][x_coord+3]],
+            'px_024' : [pixel_matrix[y_coord-3][x_coord+4]],
+            'px_025' : [pixel_matrix[y_coord-2][x_coord+2]],         
+            'px_026' : [pixel_matrix[y_coord-2][x_coord+3]],             
+            'px_027' : [pixel_matrix[y_coord-2][x_coord+4]],
+
+            'px_028' : [pixel_matrix[y_coord-1][x_coord-4]],         # Section 4 - Middle Left
+            'px_029' : [pixel_matrix[y_coord-1][x_coord-3]], 
+            'px_030' : [pixel_matrix[y_coord-1][x_coord-2]], 
+            'px_031' : [pixel_matrix[y_coord+0][x_coord-4]], 
+            'px_032' : [pixel_matrix[y_coord+0][x_coord-3]], 
+            'px_033' : [pixel_matrix[y_coord+0][x_coord-2]], 
+            'px_034' : [pixel_matrix[y_coord+1][x_coord-4]], 
+            'px_035' : [pixel_matrix[y_coord+1][x_coord-3]], 
+            'px_036' : [pixel_matrix[y_coord+1][x_coord-2]],
+
+            'px_037' : [pixel_matrix[y_coord-1][x_coord-1]],         # Section 5 - Center
+            'px_038' : [pixel_matrix[y_coord-1][x_coord+0]],
+            'px_039' : [pixel_matrix[y_coord-1][x_coord+1]],
+            'px_040' : [pixel_matrix[y_coord+0][x_coord-1]], 
+            'px_041' : [pixel_matrix[y_coord+0][x_coord+0]],         ### Middle of Focal Vision
+            'px_042' : [pixel_matrix[y_coord+0][x_coord+1]],
+            'px_043' : [pixel_matrix[y_coord+1][x_coord-1]], 
+            'px_044' : [pixel_matrix[y_coord+1][x_coord+0]],
+            'px_045' : [pixel_matrix[y_coord+1][x_coord+1]],
+            
+            'px_046' : [pixel_matrix[y_coord-1][x_coord+2]],         # Section 6 - Middle Right
+            'px_047' : [pixel_matrix[y_coord-1][x_coord+3]],
+            'px_048' : [pixel_matrix[y_coord-1][x_coord+4]],
+            'px_049' : [pixel_matrix[y_coord+0][x_coord+2]],
+            'px_050' : [pixel_matrix[y_coord+0][x_coord+3]],
+            'px_051' : [pixel_matrix[y_coord+0][x_coord+4]],
+            'px_052' : [pixel_matrix[y_coord+1][x_coord+2]],         
+            'px_053' : [pixel_matrix[y_coord+1][x_coord+3]],             
+            'px_054' : [pixel_matrix[y_coord+1][x_coord+4]], 
+
+            'px_055' : [pixel_matrix[y_coord+2][x_coord-4]],         # Section 7 - Bottom Left
+            'px_056' : [pixel_matrix[y_coord+2][x_coord-3]],
+            'px_057' : [pixel_matrix[y_coord+2][x_coord-2]],
+            'px_058' : [pixel_matrix[y_coord+3][x_coord-4]],
+            'px_059' : [pixel_matrix[y_coord+3][x_coord-3]],
+            'px_060' : [pixel_matrix[y_coord+3][x_coord-2]],
+            'px_061' : [pixel_matrix[y_coord+4][x_coord-4]],
+            'px_062' : [pixel_matrix[y_coord+4][x_coord-3]],
+            'px_063' : [pixel_matrix[y_coord+4][x_coord-2]],
+
+            'px_064' : [pixel_matrix[y_coord+2][x_coord-1]],         # Section 8 - Bottom Middle
+            'px_065' : [pixel_matrix[y_coord+2][x_coord+0]],         
+            'px_066' : [pixel_matrix[y_coord+2][x_coord+1]],
+            'px_067' : [pixel_matrix[y_coord+3][x_coord-1]], 
+            'px_068' : [pixel_matrix[y_coord+3][x_coord+0]], 
+            'px_069' : [pixel_matrix[y_coord+3][x_coord+1]],
+            'px_070' : [pixel_matrix[y_coord+4][x_coord-1]], 
+            'px_071' : [pixel_matrix[y_coord+4][x_coord+0]], 
+            'px_072' : [pixel_matrix[y_coord+4][x_coord+1]],
+
+            'px_073' : [pixel_matrix[y_coord+2][x_coord+2]],         # Section 9 - Bottom Right
+            'px_074' : [pixel_matrix[y_coord+2][x_coord+3]],
+            'px_075' : [pixel_matrix[y_coord+2][x_coord+4]],
+            'px_076' : [pixel_matrix[y_coord+3][x_coord+2]],
+            'px_077' : [pixel_matrix[y_coord+3][x_coord+3]],
+            'px_078' : [pixel_matrix[y_coord+3][x_coord+4]],
+            'px_079' : [pixel_matrix[y_coord+4][x_coord+2]],         
+            'px_080' : [pixel_matrix[y_coord+4][x_coord+3]],             
+            'px_081' : [pixel_matrix[y_coord+4][x_coord+4]],
         }
         signal_dictionary.update(new_signal_dictionary)         # Update 'signal_dictionary' w/ NEW Signal Dictionary
         
@@ -718,146 +372,222 @@ def main():
 if __name__ == "__main__":
 
     t = 0
-    x_coord = X_COORD
-    y_coord = Y_COORD
+    x_coord = X_COORD -1        # For reading index of Image Pixel Matrix (List of lists)
+    y_coord = Y_COORD -1        # (!) At sampling COORD is subtracted by 1 ('-1') due to referencing 0-th Indexed List
 
 
     # Set Field of Vision Pixel Inputs
-    fp_001 = pixel_matrix[y_coord][x_coord]                 # Focal Pixel - Spiral out from center, clockwise
-    fp_002 = pixel_matrix[y_coord-1][x_coord]
-    fp_003 = pixel_matrix[y_coord-1][x_coord+1]
-    fp_004 = pixel_matrix[y_coord][x_coord+1]
-    fp_005 = pixel_matrix[y_coord+1][x_coord+1]
-    fp_006 = pixel_matrix[y_coord+1][x_coord]
-    fp_007 = pixel_matrix[y_coord+1][x_coord-1]
-    fp_008 = pixel_matrix[y_coord][x_coord-1]
-    fp_009 = pixel_matrix[y_coord-1][x_coord-1]
+    ''' px_001 references the 1st Pixel of the Field of Vision NOT the image !!! '''
+
+    pixel_input_list = []
+    p_num = 1
+    for p in range(81):
+        pixel = str(p_num)
+        pixel = pixel.zfill(3)
+        pixel_input_list.append(f'px_{pixel}')
+        p_num+=1
+
+    px_001 = pixel_matrix[y_coord-4][x_coord-4]         # Section 1 - Top Left
+    px_002 = pixel_matrix[y_coord-4][x_coord-3]
+    px_003 = pixel_matrix[y_coord-4][x_coord-2]
+    px_004 = pixel_matrix[y_coord-3][x_coord-4]
+    px_005 = pixel_matrix[y_coord-3][x_coord-3]
+    px_006 = pixel_matrix[y_coord-3][x_coord-2]
+    px_007 = pixel_matrix[y_coord-2][x_coord-4]
+    px_008 = pixel_matrix[y_coord-2][x_coord-3]
+    px_009 = pixel_matrix[y_coord-2][x_coord-2]
+
+    px_010 = pixel_matrix[y_coord-4][x_coord-1]         # Section 2 - Top Middle
+    px_011 = pixel_matrix[y_coord-4][x_coord+0]         
+    px_012 = pixel_matrix[y_coord-4][x_coord+1]
+    px_013 = pixel_matrix[y_coord-3][x_coord-1] 
+    px_014 = pixel_matrix[y_coord-3][x_coord+0] 
+    px_015 = pixel_matrix[y_coord-3][x_coord+1]
+    px_016 = pixel_matrix[y_coord-2][x_coord-1] 
+    px_017 = pixel_matrix[y_coord-2][x_coord+0] 
+    px_018 = pixel_matrix[y_coord-2][x_coord+1]
+
+    px_019 = pixel_matrix[y_coord-4][x_coord+2]         # Section 3 - Top Right
+    px_020 = pixel_matrix[y_coord-4][x_coord+3]
+    px_021 = pixel_matrix[y_coord-4][x_coord+4]
+    px_022 = pixel_matrix[y_coord-3][x_coord+2]
+    px_023 = pixel_matrix[y_coord-3][x_coord+3]
+    px_024 = pixel_matrix[y_coord-3][x_coord+4]
+    px_025 = pixel_matrix[y_coord-2][x_coord+2]         
+    px_026 = pixel_matrix[y_coord-2][x_coord+3]             
+    px_027 = pixel_matrix[y_coord-2][x_coord+4]
+
+    px_028 = pixel_matrix[y_coord-1][x_coord-4]         # Section 4 - Middle Left
+    px_029 = pixel_matrix[y_coord-1][x_coord-3] 
+    px_030 = pixel_matrix[y_coord-1][x_coord-2] 
+    px_031 = pixel_matrix[y_coord+0][x_coord-4] 
+    px_032 = pixel_matrix[y_coord+0][x_coord-3] 
+    px_033 = pixel_matrix[y_coord+0][x_coord-2] 
+    px_034 = pixel_matrix[y_coord+1][x_coord-4] 
+    px_035 = pixel_matrix[y_coord+1][x_coord-3] 
+    px_036 = pixel_matrix[y_coord+1][x_coord-2]
+
+    px_037 = pixel_matrix[y_coord-1][x_coord-1]         # Section 5 - Center
+    px_038 = pixel_matrix[y_coord-1][x_coord+0]
+    px_039 = pixel_matrix[y_coord-1][x_coord+1]
+    px_040 = pixel_matrix[y_coord+0][x_coord-1] 
+    px_041 = pixel_matrix[y_coord+0][x_coord+0]         ### Middle of Focal Vision
+    px_042 = pixel_matrix[y_coord+0][x_coord+1]
+    px_043 = pixel_matrix[y_coord+1][x_coord-1] 
+    px_044 = pixel_matrix[y_coord+1][x_coord+0]
+    px_045 = pixel_matrix[y_coord+1][x_coord+1]
     
-    pp_010 = pixel_matrix[y_coord-2][x_coord]               # Peripheral Pixel - Continue numbering from Focal Pixels
-    pp_011 = pixel_matrix[y_coord-2][x_coord+1]             # Continue spiraling out, clockwise, from 12 o'clock
-    pp_012 = pixel_matrix[y_coord-2][x_coord+2]
+    px_046 = pixel_matrix[y_coord-1][x_coord+2]         # Section 6 - Middle Right
+    px_047 = pixel_matrix[y_coord-1][x_coord+3]
+    px_048 = pixel_matrix[y_coord-1][x_coord+4]
+    px_049 = pixel_matrix[y_coord+0][x_coord+2]
+    px_050 = pixel_matrix[y_coord+0][x_coord+3]
+    px_051 = pixel_matrix[y_coord+0][x_coord+4]
+    px_052 = pixel_matrix[y_coord+1][x_coord+2]         
+    px_053 = pixel_matrix[y_coord+1][x_coord+3]             
+    px_054 = pixel_matrix[y_coord+1][x_coord+4] 
 
-    pp_013 = pixel_matrix[y_coord-1][x_coord+2]
-    pp_014 = pixel_matrix[y_coord][x_coord+2]
-    pp_015 = pixel_matrix[y_coord+1][x_coord+2]
+    px_055 = pixel_matrix[y_coord+2][x_coord-4]         # Section 7 - Bottom Left
+    px_056 = pixel_matrix[y_coord+2][x_coord-3]
+    px_057 = pixel_matrix[y_coord+2][x_coord-2]
+    px_058 = pixel_matrix[y_coord+3][x_coord-4]
+    px_059 = pixel_matrix[y_coord+3][x_coord-3]
+    px_060 = pixel_matrix[y_coord+3][x_coord-2]
+    px_061 = pixel_matrix[y_coord+4][x_coord-4]
+    px_062 = pixel_matrix[y_coord+4][x_coord-3]
+    px_063 = pixel_matrix[y_coord+4][x_coord-2]
 
-    pp_016 = pixel_matrix[y_coord+2][x_coord+2]
-    pp_017 = pixel_matrix[y_coord+2][x_coord+1]
-    pp_018 = pixel_matrix[y_coord+2][x_coord]
-    pp_019 = pixel_matrix[y_coord+2][x_coord-1]
-    pp_020 = pixel_matrix[y_coord+2][x_coord-2]
+    px_064 = pixel_matrix[y_coord+2][x_coord-1]         # Section 8 - Bottom Middle
+    px_065 = pixel_matrix[y_coord+2][x_coord+0]         
+    px_066 = pixel_matrix[y_coord+2][x_coord+1]
+    px_067 = pixel_matrix[y_coord+3][x_coord-1] 
+    px_068 = pixel_matrix[y_coord+3][x_coord+0] 
+    px_069 = pixel_matrix[y_coord+3][x_coord+1]
+    px_070 = pixel_matrix[y_coord+4][x_coord-1] 
+    px_071 = pixel_matrix[y_coord+4][x_coord+0] 
+    px_072 = pixel_matrix[y_coord+4][x_coord+1]
 
-    pp_021 = pixel_matrix[y_coord+1][x_coord-2]
-    pp_022 = pixel_matrix[y_coord][x_coord-2]
-    pp_023 = pixel_matrix[y_coord-1][x_coord-2]
+    px_073 = pixel_matrix[y_coord+2][x_coord+2]         # Section 9 - Bottom Right
+    px_074 = pixel_matrix[y_coord+2][x_coord+3]
+    px_075 = pixel_matrix[y_coord+2][x_coord+4]
+    px_076 = pixel_matrix[y_coord+3][x_coord+2]
+    px_077 = pixel_matrix[y_coord+3][x_coord+3]
+    px_078 = pixel_matrix[y_coord+3][x_coord+4]
+    px_079 = pixel_matrix[y_coord+4][x_coord+2]         
+    px_080 = pixel_matrix[y_coord+4][x_coord+3]             
+    px_081 = pixel_matrix[y_coord+4][x_coord+4]
 
-    pp_024 = pixel_matrix[y_coord-2][x_coord-2]
-    pp_025 = pixel_matrix[y_coord-2][x_coord-1]             # this ends the Inner Peripheral Pixels, go to Outer PP
-
-    pp_026 = pixel_matrix[y_coord-3][x_coord]               # this starts the Outer PP
-    pp_027 = pixel_matrix[y_coord-3][x_coord+1]
-    pp_028 = pixel_matrix[y_coord-3][x_coord+2]
-    pp_029 = pixel_matrix[y_coord-3][x_coord+3]
-
-    pp_030 = pixel_matrix[y_coord-2][x_coord+3]
-    pp_031 = pixel_matrix[y_coord-1][x_coord+3]
-    pp_032 = pixel_matrix[y_coord][x_coord+3]
-    pp_033 = pixel_matrix[y_coord+1][x_coord+3]
-    pp_034 = pixel_matrix[y_coord+2][x_coord+3]
-
-    pp_035 = pixel_matrix[y_coord+3][x_coord+3]
-    pp_036 = pixel_matrix[y_coord+3][x_coord+2]
-    pp_037 = pixel_matrix[y_coord+3][x_coord+1]
-    pp_038 = pixel_matrix[y_coord+3][x_coord]
-    pp_039 = pixel_matrix[y_coord+3][x_coord-1]
-    pp_040 = pixel_matrix[y_coord+3][x_coord-2]
-    pp_041 = pixel_matrix[y_coord+3][x_coord-3]
-
-    pp_042 = pixel_matrix[y_coord+2][x_coord-3]
-    pp_043 = pixel_matrix[y_coord+1][x_coord-3]
-    pp_044 = pixel_matrix[y_coord][x_coord-3]
-    pp_045 = pixel_matrix[y_coord-1][x_coord-3]
-    pp_046 = pixel_matrix[y_coord-2][x_coord-3]
-
-    pp_047 = pixel_matrix[y_coord-3][x_coord-3]
-    pp_048 = pixel_matrix[y_coord-3][x_coord-2]
-    pp_049 = pixel_matrix[y_coord-3][x_coord-1]             # this ends the Outer Peripheral Pixels
 
     # Print what the AI is seeing
     try:
         print(f"\n\ntimestep: t{t}")
-        print(f"center_of_fv: fv_x{x_coord}_y{y_coord}")
+        print(f"center_of_fv: fv_x{x_coord+1}_y{y_coord+1}")
         print("cofv_signal:", pixel_matrix[y_coord][x_coord])
-        print("pv_nrth:", [format(pp_047, '.3f')], [format(pp_048, '.3f')], [format(pp_049, '.3f')], [format(pp_026, '.3f')], [format(pp_027, '.3f')], [format(pp_028, '.3f')], [format(pp_029, '.3f')])
-        print("pv_nrth:", [format(pp_046, '.3f')], [format(pp_024, '.3f')], [format(pp_025, '.3f')], [format(pp_010, '.3f')], [format(pp_011, '.3f')], [format(pp_012, '.3f')], [format(pp_030, '.3f')])
-        print("fv_view:", [format(pp_045, '.3f')], [format(pp_023, '.3f')], [format(fp_009, '.3f')], [format(fp_002, '.3f')], [format(fp_003, '.3f')], [format(pp_013, '.3f')], [format(pp_031, '.3f')])
-        print("        ", [format(pp_044, '.3f')], [format(pp_022, '.3f')], [format(fp_008, '.3f')], [format(fp_001, '.3f')], [format(fp_004, '.3f')], [format(pp_014, '.3f')], [format(pp_032, '.3f')])
-        print("        ", [format(pp_043, '.3f')], [format(pp_021, '.3f')], [format(fp_007, '.3f')], [format(fp_006, '.3f')], [format(fp_005, '.3f')], [format(pp_015, '.3f')], [format(pp_033, '.3f')]) 
-        print("pv_sth: ", [format(pp_042, '.3f')], [format(pp_020, '.3f')], [format(pp_019, '.3f')], [format(pp_018, '.3f')], [format(pp_017, '.3f')], [format(pp_016, '.3f')], [format(pp_034, '.3f')])
-        print("pv_sth: ", [format(pp_041, '.3f')], [format(pp_040, '.3f')], [format(pp_039, '.3f')], [format(pp_038, '.3f')], [format(pp_037, '.3f')], [format(pp_036, '.3f')], [format(pp_035, '.3f')])
+        print("periph :", [format(px_001, '.3f')], [format(px_002, '.3f')], [format(px_003, '.3f')], [format(px_010, '.3f')], [format(px_011, '.3f')], [format(px_012, '.3f')], [format(px_019, '.3f')], [format(px_020, '.3f')], [format(px_021, '.3f')])
+        print("periph :", [format(px_004, '.3f')], [format(px_005, '.3f')], [format(px_006, '.3f')], [format(px_013, '.3f')], [format(px_014, '.3f')], [format(px_015, '.3f')], [format(px_022, '.3f')], [format(px_023, '.3f')], [format(px_024, '.3f')])
+        print("periph :", [format(px_007, '.3f')], [format(px_008, '.3f')], [format(px_009, '.3f')], [format(px_016, '.3f')], [format(px_017, '.3f')], [format(px_018, '.3f')], [format(px_025, '.3f')], [format(px_026, '.3f')], [format(px_027, '.3f')])
+        print("focal  :", [format(px_028, '.3f')], [format(px_029, '.3f')], [format(px_030, '.3f')], [format(px_037, '.3f')], [format(px_038, '.3f')], [format(px_039, '.3f')], [format(px_046, '.3f')], [format(px_047, '.3f')], [format(px_048, '.3f')])
+        print("focal  :", [format(px_031, '.3f')], [format(px_032, '.3f')], [format(px_033, '.3f')], [format(px_040, '.3f')], [format(px_041, '.3f')], [format(px_042, '.3f')], [format(px_049, '.3f')], [format(px_050, '.3f')], [format(px_051, '.3f')])
+        print("focal  :", [format(px_034, '.3f')], [format(px_035, '.3f')], [format(px_036, '.3f')], [format(px_043, '.3f')], [format(px_044, '.3f')], [format(px_045, '.3f')], [format(px_052, '.3f')], [format(px_053, '.3f')], [format(px_054, '.3f')]) 
+        print("periph :", [format(px_055, '.3f')], [format(px_056, '.3f')], [format(px_057, '.3f')], [format(px_064, '.3f')], [format(px_065, '.3f')], [format(px_066, '.3f')], [format(px_073, '.3f')], [format(px_074, '.3f')], [format(px_075, '.3f')])
+        print("periph :", [format(px_058, '.3f')], [format(px_059, '.3f')], [format(px_060, '.3f')], [format(px_067, '.3f')], [format(px_068, '.3f')], [format(px_069, '.3f')], [format(px_076, '.3f')], [format(px_077, '.3f')], [format(px_078, '.3f')])
+        print("periph :", [format(px_061, '.3f')], [format(px_062, '.3f')], [format(px_063, '.3f')], [format(px_070, '.3f')], [format(px_071, '.3f')], [format(px_072, '.3f')], [format(px_079, '.3f')], [format(px_080, '.3f')], [format(px_081, '.3f')])
     except IndexError:
         print("pv_out: ", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]")
 
-    signal_dictionary = {   # set the signal
-        'fc_001': [fp_001],
-        'fc_002': [fp_001],
-        'fc_003': [fp_002],
-        'fc_004': [fp_002],
-        'fc_005': [fp_003],
-        'fc_006': [fp_003],
-        'fc_007': [fp_004],
-        'fc_008': [fp_004],
-        'fc_009': [fp_005],
-        'fc_010': [fp_005],
-        'fc_011': [fp_006],
-        'fc_012': [fp_006],
-        'fc_013': [fp_007],
-        'fc_014': [fp_007],
-        'fc_015': [fp_008],
-        'fc_016': [fp_008],
-        'fc_017': [fp_009],
-        'fc_018': [fp_009],
-        'pr_019': [pp_010],
-        'pr_020': [pp_011],
-        'pr_021': [pp_012],
-        'pr_022': [pp_013],
-        'pr_023': [pp_014],
-        'pr_024': [pp_015],
-        'pr_025': [pp_016],
-        'pr_026': [pp_017],
-        'pr_027': [pp_018],
-        'pr_028': [pp_019],
-        'pr_029': [pp_020],
-        'pr_030': [pp_021],
-        'pr_031': [pp_022],
-        'pr_032': [pp_023],
-        'pr_033': [pp_024],
-        'pr_034': [pp_025],
-        'pr_035': [pp_026],
-        'pr_036': [pp_027],
-        'pr_037': [pp_028],
-        'pr_038': [pp_029],
-        'pr_039': [pp_030],
-        'pr_040': [pp_031],
-        'pr_041': [pp_032],
-        'pr_042': [pp_033],
-        'pr_043': [pp_034],
-        'pr_044': [pp_035],
-        'pr_045': [pp_036],
-        'pr_046': [pp_037],
-        'pr_047': [pp_038],
-        'pr_048': [pp_039],
-        'pr_049': [pp_040],
-        'pr_050': [pp_041],
-        'pr_051': [pp_042],
-        'pr_052': [pp_043],
-        'pr_053': [pp_044],
-        'pr_054': [pp_045],
-        'pr_055': [pp_046],
-        'pr_056': [pp_047],
-        'pr_057': [pp_048],
-        'pr_058': [pp_049],
+
+    signal_dictionary = {          # Create Signal Dictionary and set Pixel in Dictionary equal to Pixel Ref from Image Pixel Matrix
+        'px_001' : [pixel_matrix[y_coord-4][x_coord-4]],         # Section 1 - Top Left
+        'px_003' : [pixel_matrix[y_coord-4][x_coord-2]],
+        'px_002' : [pixel_matrix[y_coord-4][x_coord-3]],
+        'px_004' : [pixel_matrix[y_coord-3][x_coord-4]],
+        'px_005' : [pixel_matrix[y_coord-3][x_coord-3]],
+        'px_006' : [pixel_matrix[y_coord-3][x_coord-2]],
+        'px_007' : [pixel_matrix[y_coord-2][x_coord-4]],
+        'px_008' : [pixel_matrix[y_coord-2][x_coord-3]],
+        'px_009' : [pixel_matrix[y_coord-2][x_coord-2]],
+
+        'px_010' : [pixel_matrix[y_coord-4][x_coord-1]],         # Section 2 - Top Middle
+        'px_011' : [pixel_matrix[y_coord-4][x_coord+0]],         
+        'px_012' : [pixel_matrix[y_coord-4][x_coord+1]],
+        'px_013' : [pixel_matrix[y_coord-3][x_coord-1]], 
+        'px_014' : [pixel_matrix[y_coord-3][x_coord+0]], 
+        'px_015' : [pixel_matrix[y_coord-3][x_coord+1]],
+        'px_016' : [pixel_matrix[y_coord-2][x_coord-1]], 
+        'px_017' : [pixel_matrix[y_coord-2][x_coord+0]], 
+        'px_018' : [pixel_matrix[y_coord-2][x_coord+1]],
+
+        'px_019' : [pixel_matrix[y_coord-4][x_coord+2]],         # Section 3 - Top Right
+        'px_020' : [pixel_matrix[y_coord-4][x_coord+3]],
+        'px_021' : [pixel_matrix[y_coord-4][x_coord+4]],
+        'px_022' : [pixel_matrix[y_coord-3][x_coord+2]],
+        'px_023' : [pixel_matrix[y_coord-3][x_coord+3]],
+        'px_024' : [pixel_matrix[y_coord-3][x_coord+4]],
+        'px_025' : [pixel_matrix[y_coord-2][x_coord+2]],         
+        'px_026' : [pixel_matrix[y_coord-2][x_coord+3]],             
+        'px_027' : [pixel_matrix[y_coord-2][x_coord+4]],
+
+        'px_028' : [pixel_matrix[y_coord-1][x_coord-4]],         # Section 4 - Middle Left
+        'px_029' : [pixel_matrix[y_coord-1][x_coord-3]], 
+        'px_030' : [pixel_matrix[y_coord-1][x_coord-2]], 
+        'px_031' : [pixel_matrix[y_coord+0][x_coord-4]], 
+        'px_032' : [pixel_matrix[y_coord+0][x_coord-3]], 
+        'px_033' : [pixel_matrix[y_coord+0][x_coord-2]], 
+        'px_034' : [pixel_matrix[y_coord+1][x_coord-4]], 
+        'px_035' : [pixel_matrix[y_coord+1][x_coord-3]], 
+        'px_036' : [pixel_matrix[y_coord+1][x_coord-2]],
+
+        'px_037' : [pixel_matrix[y_coord-1][x_coord-1]],         # Section 5 - Center
+        'px_038' : [pixel_matrix[y_coord-1][x_coord+0]],
+        'px_039' : [pixel_matrix[y_coord-1][x_coord+1]],
+        'px_040' : [pixel_matrix[y_coord+0][x_coord-1]], 
+        'px_041' : [pixel_matrix[y_coord+0][x_coord+0]],         ### Middle of Focal Vision
+        'px_042' : [pixel_matrix[y_coord+0][x_coord+1]],
+        'px_043' : [pixel_matrix[y_coord+1][x_coord-1]], 
+        'px_044' : [pixel_matrix[y_coord+1][x_coord+0]],
+        'px_045' : [pixel_matrix[y_coord+1][x_coord+1]],
+        
+        'px_046' : [pixel_matrix[y_coord-1][x_coord+2]],         # Section 6 - Middle Right
+        'px_047' : [pixel_matrix[y_coord-1][x_coord+3]],
+        'px_048' : [pixel_matrix[y_coord-1][x_coord+4]],
+        'px_049' : [pixel_matrix[y_coord+0][x_coord+2]],
+        'px_050' : [pixel_matrix[y_coord+0][x_coord+3]],
+        'px_051' : [pixel_matrix[y_coord+0][x_coord+4]],
+        'px_052' : [pixel_matrix[y_coord+1][x_coord+2]],         
+        'px_053' : [pixel_matrix[y_coord+1][x_coord+3]],             
+        'px_054' : [pixel_matrix[y_coord+1][x_coord+4]], 
+
+        'px_055' : [pixel_matrix[y_coord+2][x_coord-4]],         # Section 7 - Bottom Left
+        'px_056' : [pixel_matrix[y_coord+2][x_coord-3]],
+        'px_057' : [pixel_matrix[y_coord+2][x_coord-2]],
+        'px_058' : [pixel_matrix[y_coord+3][x_coord-4]],
+        'px_059' : [pixel_matrix[y_coord+3][x_coord-3]],
+        'px_060' : [pixel_matrix[y_coord+3][x_coord-2]],
+        'px_061' : [pixel_matrix[y_coord+4][x_coord-4]],
+        'px_062' : [pixel_matrix[y_coord+4][x_coord-3]],
+        'px_063' : [pixel_matrix[y_coord+4][x_coord-2]],
+
+        'px_064' : [pixel_matrix[y_coord+2][x_coord-1]],         # Section 8 - Bottom Middle
+        'px_065' : [pixel_matrix[y_coord+2][x_coord+0]],         
+        'px_066' : [pixel_matrix[y_coord+2][x_coord+1]],
+        'px_067' : [pixel_matrix[y_coord+3][x_coord-1]], 
+        'px_068' : [pixel_matrix[y_coord+3][x_coord+0]], 
+        'px_069' : [pixel_matrix[y_coord+3][x_coord+1]],
+        'px_070' : [pixel_matrix[y_coord+4][x_coord-1]], 
+        'px_071' : [pixel_matrix[y_coord+4][x_coord+0]], 
+        'px_072' : [pixel_matrix[y_coord+4][x_coord+1]],
+
+        'px_073' : [pixel_matrix[y_coord+2][x_coord+2]],         # Section 9 - Bottom Right
+        'px_074' : [pixel_matrix[y_coord+2][x_coord+3]],
+        'px_075' : [pixel_matrix[y_coord+2][x_coord+4]],
+        'px_076' : [pixel_matrix[y_coord+3][x_coord+2]],
+        'px_077' : [pixel_matrix[y_coord+3][x_coord+3]],
+        'px_078' : [pixel_matrix[y_coord+3][x_coord+4]],
+        'px_079' : [pixel_matrix[y_coord+4][x_coord+2]],         
+        'px_080' : [pixel_matrix[y_coord+4][x_coord+3]],             
+        'px_081' : [pixel_matrix[y_coord+4][x_coord+4]],
     }
+
 
     direction_lookup = {    
         'dd_001': 
