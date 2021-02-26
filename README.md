@@ -1,5 +1,14 @@
 # organicneuralnetwork
-Advancements in NN are getting increasingly contrived. My ONN ("Organic Neural Network") is a return to first principles, building a new NN architecture from foundational Neuroscience principles - AND NO GRADIENT DESCENT.
+Background: For the most part, advancements and foci in Artifial Intelligence are getting increasingly contrived. These "increasingly contrived" models are great for their narrow tasks, but I would like to see more adaptive models, inspired by basic principles of biological adaptation and the versatile architectures and guiding principles of the brain and nervous system.
+
+This Visual ONN ("Visual Organic Neural Network") is a branch of my work in a greater body of work in achieving my goal to see more adaptive, more "humnan-like" Neural Networks. My series of ONN architecures are a return to first principles, building new NN architectures from foundational Neuroscience principles - and no graident descent.
+
+In beginning this project I started with a blank script and clear mind, not borrowing concepts from any existing models. Any time I was stuck with how to solve a problem, I researched how the brain/nervous system solved this problem, and used that as my guide to solution. Over time, as Aritificial Intelligence/Neural Networks borrow from basic principles of the brain, overlap between my principles and existing principles naturally emerged. This has been a great learning lesson in the first principles of Neuroscience and Artificial Intelligence.
+
+Below I will discuss some basic differences and similarities between my ONN principles and those commonly seen in more mainstream Artificial Intelligence principles.
+
+Perhaps the most basic principle and difference is that which a neuron uses to determine if it "fires" (sends signal). Many existing NN propogate positive and negative values achieved by multipling inputs by weights and biases, then "squishing" the output to between 0 and 1 or -1 and 1. In biology, and in most neurons of my ONN, neurons are either "Excitatory" or "Inhibitory" - their signal output is either positive (excitatory) or negative (inhibitory). Receiving signal from many pre-synaptic (or "upstream") neurons, each neuron sums these positive and negative signals (in the axon hillock) to determine if they fire. If their threshold for firing - that is to say, the inhibitory signals outweighed the excitatory signals - they do not fire, propogating no signal. This principle is illustrated below, showing signal propogation through the retina of the eye - from a grouping of Rods to a coupling of Bipolar Cells to a single Retinal Ganglion Cell.
+
 
 Below is a print out of what the AI is seeing as it looks over an image. With each signal propogation, it decides how to move its gaze to see more of what's interesting in the picture.
 
