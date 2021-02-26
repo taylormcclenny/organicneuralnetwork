@@ -1,6 +1,8 @@
 # organicneuralnetwork
 Background: For the most part, advancements and foci in Artifial Intelligence are getting increasingly contrived. These "increasingly contrived" models are great for their narrow tasks, but I would like to see more adaptive models, inspired by basic principles of biological adaptation and the versatile architectures and guiding principles of the brain and nervous system.
 
+![field_of_vision in terminal](https://github.com/taylormcclenny/organicneuralnetwork/blob/master/onn_diagram.png)
+
 This Visual ONN ("Visual Organic Neural Network") is a branch of my work in a greater body of work in achieving my goal to see more adaptive, more "humnan-like" Neural Networks. My series of ONN architecures are a return to first principles, building new NN architectures from foundational Neuroscience principles - and no complex mathematics or gradient descent.
 
 In beginning this project I started with a blank script and clear mind, not borrowing concepts from any existing models. Any time I was stuck with how to solve a problem, I researched how the brain/nervous system solved this problem, and used that as my guide to solution. Over time, as Aritificial Intelligence/Neural Networks borrow from basic principles of the brain, overlap between my principles and existing principles naturally emerged. This has been a great learning lesson in the first principles of Biology and Artificial Intelligence.
@@ -22,8 +24,6 @@ Below is a print out of what the AI is seeing as it looks over an image. With ea
 Now understanding a couple simple principles of the ONN, let's look at the first major goal/task of this Visual ONN and a sample architecture to achieve this goal.
 
 GOAL:  This AI looks around simple images, focusing on what's interesting. It has a small "field of vision", mimicing our (human) focal and peripheral vision. This serves as inputs to simply let the AI know (1) if it's looking at something and (2) where it should look next to focus on what's interesting. This is the first step in our own visual process. The eye sends signals to the occipital lobe where it determines if it's "looking at something of interest". Based on the interest and basic signal characterisitics from the various neurons of the retina, the Occipital Lobe decides where to next send (like a dispatcher) the signal (for identification, movement tracking, etc.).
-
-![field_of_vision in terminal](https://github.com/taylormcclenny/organicneuralnetwork/blob/master/onn_diagram.png)
 
 Another major difference (and similarity) between this sample Visual ONN and more traditional Convolutional Neural Networks ("CNN"), is that the Visual ONN is only looking at a small portion of the image at any given time. This is very similar to the concept of filters in CNNs, however, there is no contrived, or human built-in edge detection or image manipulation, nor is there a human provided systematic sweep over the full image. But rather, the AI takes in raw (but Normalized) values, which go straight to the Rods and Cones of the Visual ONN, and the AI, upon signal reaching the Occipital Lobe, decides where to look next.
 
