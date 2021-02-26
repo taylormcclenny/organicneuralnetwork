@@ -7,6 +7,8 @@ In beginning this project I started with a blank script and clear mind, not borr
 
 Below I will discuss some basic differences and similarities between my ONN principles and those commonly seen in more mainstream Artificial Intelligence principles.
 
+![basic_signal_propogation](https://github.com/taylormcclenny/organicneuralnetwork/blob/master/basic_signal_propogation.png)
+
 Perhaps the most basic principle and difference is that which a neuron uses to determine if it "fires" (sends signal). Many existing NN propogate positive and negative values achieved by multipling inputs by weights and biases, then "squishing" the output to between 0 and 1 or -1 and 1. In biology, and in most neurons of my ONN, neurons are either "Excitatory" or "Inhibitory" - their signal output is either positive (excitatory) or negative (inhibitory). Receiving signal from many pre-synaptic (or "upstream") neurons, each neuron sums these positive and negative signals (in the axon hillock) to determine if they fire. If their threshold for firing - that is to say, the inhibitory signals outweighed the excitatory signals - they do not fire, propogating no signal. This principle is illustrated below, showing signal propogation through the retina of the eye - from a grouping of Rods to a coupling of Bipolar Cells to a single Retinal Ganglion Cell.
 
 
