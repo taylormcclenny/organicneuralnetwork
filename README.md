@@ -40,7 +40,7 @@ DISCLAIMER:  This is an ongoing and rapidly developing project. The majority of 
 # Folders & Files
 research/ - Contains most pertinent, distilled information from research papers, diagrams, images, and videos.
 
-images/ - Contains various images used for testing/training as well as some images that diagram anatomy and function of the eye.
+images/ - Contains various images used for testing/training.
 
 /generate_onn.py - Generates the "brain map" of the Neural Network (as a Python dictionary or JSON file). It details how the various layers of the eye (rods & cones, bipolar neurons, ganglion neurons, etc.) begin their initial interaction with each other. This brain map is fed into the "signal generator" aka. "run_onn.py" where a signal is sent through the brain map.
 
