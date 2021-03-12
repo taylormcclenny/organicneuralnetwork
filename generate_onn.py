@@ -13,7 +13,7 @@ print("\n")
     The final product of this script is to generate the starting "brain map" or Neural Network for training. 
     This "brain map" is a dictionary (or JSON) of every Neuron's post-synaptic connections.
 
-    ie. Ganglion '026' connects to Occipital Entry Neurons '031', '032', & '033' w/ positive synapse values
+    ie. Ganglion 'gn_026' connects to Occipital Entry Neurons 'oc_031', 'oc_032', & 'oc_033' w/ positive synapse values
             of '0.832', '0.757', & '0.945' respectively.
 
         'gn_026': [
@@ -21,8 +21,7 @@ print("\n")
             [0.832, 0.757, 0.945]
         ],
 
-        As the signal passes through the Network, it is multiplied by each Neuron's post-synaptic value 
-        (some positive, some negative) then summed by each receiving Neuron to determine signal propogation.
+        As the signal passes through the Network...
         
         This is done via run_onn.py.
 
@@ -58,11 +57,11 @@ PERIPHERAL_VISION_SECTIONS = 8          # Number of Periheral Vision Sections (8
 # Shorthand
 PERIPHERAL_VISION_SPACE = ((TOTAL_VISION_FIELD_WIDTH*TOTAL_VISION_FIELD_HEIGHT)-(FOCAL_VISION_FIELD_WIDTH*FOCAL_VISION_FIELD_HEIGHT))
 
-FOCAL_CONES_PER_PIXEL = 2               # ex. 2 Focal Cones per 1 Focal Pixel
+FOCAL_CONES_PER_PIXEL = 1               # ex. 2 Focal Cones per 1 Focal Pixel
 RODS_PER_PIXEL = 1
-FOCAL_BIPOLAR_PER_PIXEL = 2                  # Each Focal Cone Gets 1 Bipolar Cell & 1 Ganglion
-PERIPHERAL_BIPOLAR_PER_PIXEL = 2*1/9         # Each Section (9px) gets 2 Bipolar Cells & 1 Ganglion
-FOCAL_GANGLION_PER_PIXEL = 2
+FOCAL_BIPOLAR_PER_PIXEL = 1                  # Each Focal Cone Gets 1 Bipolar Cell & 1 Ganglion
+PERIPHERAL_BIPOLAR_PER_PIXEL = 1*1/9         # Each Section (9px) gets 2 Bipolar Cells & 1 Ganglion
+FOCAL_GANGLION_PER_PIXEL = 1
 PERIPHERAL_GANGLION_PER_PIXEL = 1*1/9
 
 # Dimensions are per Section(ish)
@@ -71,6 +70,7 @@ PERIPHERAL_OCCIPITAL_PER_SECTION = 3
 DEEP_OCCIPITAL_PER_ENTRY = 3                 # (!) Per "Occipital Entry Neuron"
 
 
+# Pixel Input
 visual_field_dictionary = {}
 section_num = 1
 pixel_num = 1
@@ -88,6 +88,7 @@ for _ in range(PERIPHERAL_VISION_SECTIONS+1):
     visual_field_dictionary[f'vf_{section}'] = [pixel_list]
     section_num+=1
 
+# Rods & Cones
 focal_cone_num = 1
 rod_num = 1
 for vf_section in visual_field_dictionary:
@@ -110,7 +111,7 @@ for vf_section in visual_field_dictionary:
             rod_num+=1
         visual_field_dictionary[vf_section].append(rod_list)
 
-
+# Bipolar Cells
 bipolar_num = 1
 for vf_section in visual_field_dictionary:
 
@@ -132,6 +133,7 @@ for vf_section in visual_field_dictionary:
             bipolar_num+=1
         visual_field_dictionary[vf_section].append(peripheral_bipolar_list)
 
+# Ganglion Neurons
 ganglion_num = 1
 for vf_section in visual_field_dictionary:
 
@@ -153,6 +155,7 @@ for vf_section in visual_field_dictionary:
             ganglion_num+=1
         visual_field_dictionary[vf_section].append(peripheral_ganglion_list)
 
+# Occipital Neurons - Entry
 occipital_num = 1
 for vf_section in visual_field_dictionary:
 
@@ -174,6 +177,7 @@ for vf_section in visual_field_dictionary:
             occipital_num+=1
         visual_field_dictionary[vf_section].append(peripheral_occipital_list)
 
+# Occipital Neurons - Deep
 deep_occipital_num = 1
 for vf_section in visual_field_dictionary:
 
@@ -195,6 +199,7 @@ for vf_section in visual_field_dictionary:
             deep_occipital_num+=1
         visual_field_dictionary[vf_section].append(deep_occipital_list)
 
+# Direction Deciding Neurons - Feedback to Visual Field Motor Function
 direction_deciding_num = 1
 for vf_section in visual_field_dictionary:
 
@@ -311,29 +316,21 @@ for vf_section in visual_field_dictionary:
         fc_num = 0
         pixel_connection_list = []
         for pixel in visual_field_dictionary[vf_section][0]:           # Define Pixel-Focal Cone Relationship
-            cone_1 = visual_field_dictionary[vf_section][1][fc_num]
-            cone_2 = visual_field_dictionary[vf_section][1][fc_num+1]
-            cones = [cone_1, cone_2]
-            fc_num+=2
-            onn_map[pixel] = [cones,
-                                [1, 1]]                             # "1"s just to pass on signal from Pixel
+            onn_map[pixel] = [[visual_field_dictionary[vf_section][1][fc_num]],
+                                [1]]                             # "1"s just to pass on signal from Pixel
+            fc_num+=1
         
         bp_connection_num = 0
         for cone in visual_field_dictionary[vf_section][1]:             # Define Focal Cone-Bipolar Relationship
             onn_map[cone] = [[visual_field_dictionary[vf_section][2][bp_connection_num]],
-                                [np.round(np.random.uniform(0.70, 0.99), 3)]]
+                                [1]]
             bp_connection_num+=1
 
         gn_connection_num = 0
         for bipolar in visual_field_dictionary[vf_section][2]:        # Define Focal Bipolar-Ganglion Relationship
             
-            if (gn_connection_num % 2) == 0:                          # Each Pixel needs 1 Inhibitory & 1 Excitatory signal potential
-                synapse_value = -np.round(np.random.uniform(0.70, 0.99), 3)     # Inhibitory Synapse if Odd
-            else:
-                synapse_value = np.round(np.random.uniform(0.70, 0.99), 3)      # Excitatory Synapse if Even
-            
             onn_map[bipolar] = [[visual_field_dictionary[vf_section][3][gn_connection_num]],
-                                [synapse_value]]
+                                [1]]
             gn_connection_num+=1
 
         ganglion_count = 0
@@ -342,11 +339,11 @@ for vf_section in visual_field_dictionary:
 
             if (ganglion_count % 2) == 0:
                 onn_map[ganglion] = [[visual_field_dictionary[vf_section][4][occipital_count]],
-                                        [np.round(np.random.uniform(0.70, 0.99), 3)]]
+                                        [0.500]]
                 occipital_count-=1
             else:
                 onn_map[ganglion] = [[visual_field_dictionary[vf_section][4][occipital_count]],
-                                        [np.round(np.random.uniform(0.70, 0.99), 3)]]
+                                        [0.500]]
             ganglion_count+=1
             occipital_count+=1
 
@@ -389,25 +386,19 @@ for vf_section in visual_field_dictionary:
         for rod in visual_field_dictionary[vf_section][1]:            # Define Rod-Bipolar Relationship
             # Connect each Rod to each Bipolar Cell
             onn_map[rod] = [visual_field_dictionary[vf_section][2],
-                            [np.round(np.random.uniform(0.70, 0.99), 3), np.round(np.random.uniform(0.70, 0.99), 3)]]
+                            [1]]
 
         gn_connection_num = 0
-        for bipolar in visual_field_dictionary[vf_section][2]:            # Define Bipolar-Ganglion Relationship
-            
-            if (gn_connection_num % 2) == 0:
-                synapse_value = -np.round(np.random.uniform(0.70, 0.99), 3)     # Inhibitory Synapse if Odd
-            else:
-                synapse_value = np.round(np.random.uniform(0.70, 0.99), 3)      # Excitatory Synapse if Even          
+        for bipolar in visual_field_dictionary[vf_section][2]:            # Define Bipolar-Ganglion Relationship       
             
             # Connect each Bipolar Cell to Ganglion
             onn_map[bipolar] = [visual_field_dictionary[vf_section][3],
-                                [synapse_value]]
+                                [1]]
             gn_connection_num+=1
 
         for ganglion in visual_field_dictionary[vf_section][3]:
             onn_map[ganglion] = [visual_field_dictionary[vf_section][4],
-                                    [np.round(np.random.uniform(0.70, 0.99), 3), np.round(np.random.uniform(0.70, 0.99), 3),
-                                    np.round(np.random.uniform(0.70, 0.99), 3)]]
+                                    [0.500, 0.500, 0.500]]
         
         oc_num = 1
         for oc in visual_field_dictionary[vf_section][4]:
@@ -432,4 +423,4 @@ for vf_section in visual_field_dictionary:
                         gen_syn_list(1)]
 
 
-# print(onn_map)
+print(onn_map)
