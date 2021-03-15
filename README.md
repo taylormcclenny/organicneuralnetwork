@@ -42,9 +42,9 @@ research/ - Contains most pertinent, distilled information from research papers,
 
 images/ - Contains various images used for testing/training.
 
-/generate_onn.py - Generates the "brain map" of the Neural Network (as a Python dictionary or JSON file). It details how the various layers of the eye (rods & cones, bipolar neurons, ganglion neurons, etc.) begin their initial interaction with each other. This brain map is fed into the "signal generator" aka. "run_onn.py" where a signal is sent through the brain map.
+/generate_onn.py - Generates the "brain map" of the Neural Network (as a Python dictionary or JSON file). It details how the various layers of the eye (rods & cones, bipolar neurons, ganglion neurons, etc.) begin their initial interaction with each other. This brain map is fed into the "signal generator" aka. "run_generation.py" where a signal is sent through the brain map.
 
-/run_onn.py - Creates a "field of vision" to view a small portion of the image. Runs the signal through the brain map. Returns a direction to update where the "field of view" should look next.
+/run_generation.py - Creates a "field of vision" to view a small portion of the image. Runs the signal through the brain map. Returns a direction to update where the "field of view" should look next.
 
 It starts by loading an image into memory as it will reference the image many times in training (this image can be any size). 
 
