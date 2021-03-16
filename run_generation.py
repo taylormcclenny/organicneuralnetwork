@@ -1,5 +1,6 @@
 
 
+import os
 import time
 import ast
 import matplotlib.pyplot as plt
@@ -9,15 +10,62 @@ from PIL import Image
 import concurrent.futures
 
 
+SCORE_MINIMUM = 500
+
 SHOW_VF_IMAGE = 'OFF'
 PAUSE_TIME = 0.25
 
 ACTIVATION_THRESHOLD = 0      # For now, all neurons share this AT. Ultimately it should be neuron-specific & self-tuned
-SLEEP_TIME = 0.1
+SLEEP_TIME = 0.00
+
+
+''' Mutation Handlers '''
+
+# Go to 'mutations' folder and get all mutation files
+mutation_list = []
+for filename in os.listdir("mutations"):
+    if filename.startswith('onn_'):
+        mutation_list.append(filename)
+
+# Use all mutation files to create list of Synapse Mutation Values ("SMV" or "smv")
+smv_list = []
+for mutation in mutation_list:
+    character_length = len(mutation)
+    name_with_no_file = mutation[:character_length - 5]
+    smv = name_with_no_file.partition('smv_')[2]
+    if smv is not '':
+        smv_list.append(smv)
+unique_smv_set = set(smv_list)
+ordered_smv_list = sorted(unique_smv_set)
+
+# Order all mutation files by SMV (descending)
+mutations_ordered_by_smv = []
+highest_smv = []
+high_mod_smv = []
+moderate_smv = []
+lowest_smv = []
+else_smv = []
+for mutation in mutation_list:
+    character_length = len(mutation)
+    name_with_no_file = mutation[:character_length - 5]
+    smv = name_with_no_file.partition('smv_')[2]
+    if smv == ordered_smv_list[3]:
+        highest_smv.append(mutation)
+    elif smv == ordered_smv_list[2]:
+        high_mod_smv.append(mutation)
+    elif smv == ordered_smv_list[1]:
+        moderate_smv.append(mutation)
+    elif smv == ordered_smv_list[0]:
+        lowest_smv.append(mutation)
+    else: 
+        else_smv.append(mutation)
+
+mutations_ordered_by_smv = highest_smv + high_mod_smv + moderate_smv + lowest_smv + else_smv
+print(mutations_ordered_by_smv)
 
 
 ''' Helper Dictionaries & Lists '''
-mutation_list = ['gen_1_mutation_5', 'gen_1_mutation_6', 'gen_1_mutation_7']
+
 shape_list = ['triangle', 'circle', 'square']
 starting_positions = [(5,5), (14,5), (5,14), (14,14)]
 
@@ -83,14 +131,18 @@ dd_signal_dictionary = {}
 
 def main():
 
+    mutation_run_count = 1
     mutation_performance = {}
-    for mutation in mutation_list:
+    for mutation in mutations_ordered_by_smv:
         
+        print("MUTATION RUN COUNT:", mutation_run_count)
+        mutation_run_count+=1
+
         global starting_post_synaptic_neighbors_dictionary
 
         ''' Load the Neural Network '''
-        file_name = f'onn_map_{mutation}'
-        with open(f'mutations/{file_name}.json', 'r') as file:
+        file_name = f'{mutation}'
+        with open(f'mutations/{file_name}', 'r') as file:
             starting_post_synaptic_neighbors_dictionary = file.read()
         # Convert JSON string to Python Dictionary
         starting_post_synaptic_neighbors_dictionary = ast.literal_eval(starting_post_synaptic_neighbors_dictionary)
@@ -106,8 +158,8 @@ def main():
             sequence_of_pixels = img.getdata()
             list_of_pixel_tuples = list(sequence_of_pixels)
 
-            print("\n\n\n_____ START _____\n")
-            print(f"Height x Width: {height}px x {width}px\nTotal # of Pixels: {len(list_of_pixel_tuples)}\n")
+            # print("\n\n\n_____ START _____\n")
+            # print(f"Height x Width: {height}px x {width}px\nTotal # of Pixels: {len(list_of_pixel_tuples)}\n")
 
             pixel_list = []
             for pixel in list_of_pixel_tuples:
@@ -121,7 +173,7 @@ def main():
             row=1
             column_count=1
 
-            print("pixel_matrix = [")
+            # print("pixel_matrix = [")
             for pixel in pixel_list:
                 if column_count == 1:
                     temp_row = []
@@ -129,14 +181,14 @@ def main():
                     column_count+=1
                 elif column_count == width:
                     temp_row.append(pixel)
-                    print(" ", temp_row)
+                    # print(" ", temp_row)
                     pixel_matrix.append(temp_row)
                     row+=1
                     column_count=1
                 else:
                     temp_row.append(pixel)
                     column_count+=1
-            print("]")
+            # print("]")
 
 
             for starting_position in starting_positions:
@@ -241,21 +293,21 @@ def main():
                 px_081 = pixel_matrix[y_coord+4][x_coord+4]
 
                 # Print what the AI is seeing
-                try:
-                    print(f"\n\ntimestep: t{t}")
-                    print(f"center_of_fv: fv_x{x_coord+1}_y{y_coord+1}")
-                    print("cofv_signal:", pixel_matrix[y_coord][x_coord])
-                    print("periph :", [format(px_001, '.3f')], [format(px_002, '.3f')], [format(px_003, '.3f')], [format(px_010, '.3f')], [format(px_011, '.3f')], [format(px_012, '.3f')], [format(px_019, '.3f')], [format(px_020, '.3f')], [format(px_021, '.3f')])
-                    print("periph :", [format(px_004, '.3f')], [format(px_005, '.3f')], [format(px_006, '.3f')], [format(px_013, '.3f')], [format(px_014, '.3f')], [format(px_015, '.3f')], [format(px_022, '.3f')], [format(px_023, '.3f')], [format(px_024, '.3f')])
-                    print("periph :", [format(px_007, '.3f')], [format(px_008, '.3f')], [format(px_009, '.3f')], [format(px_016, '.3f')], [format(px_017, '.3f')], [format(px_018, '.3f')], [format(px_025, '.3f')], [format(px_026, '.3f')], [format(px_027, '.3f')])
-                    print("focal  :", [format(px_028, '.3f')], [format(px_029, '.3f')], [format(px_030, '.3f')], [format(px_037, '.3f')], [format(px_038, '.3f')], [format(px_039, '.3f')], [format(px_046, '.3f')], [format(px_047, '.3f')], [format(px_048, '.3f')])
-                    print("focal  :", [format(px_031, '.3f')], [format(px_032, '.3f')], [format(px_033, '.3f')], [format(px_040, '.3f')], [format(px_041, '.3f')], [format(px_042, '.3f')], [format(px_049, '.3f')], [format(px_050, '.3f')], [format(px_051, '.3f')])
-                    print("focal  :", [format(px_034, '.3f')], [format(px_035, '.3f')], [format(px_036, '.3f')], [format(px_043, '.3f')], [format(px_044, '.3f')], [format(px_045, '.3f')], [format(px_052, '.3f')], [format(px_053, '.3f')], [format(px_054, '.3f')]) 
-                    print("periph :", [format(px_055, '.3f')], [format(px_056, '.3f')], [format(px_057, '.3f')], [format(px_064, '.3f')], [format(px_065, '.3f')], [format(px_066, '.3f')], [format(px_073, '.3f')], [format(px_074, '.3f')], [format(px_075, '.3f')])
-                    print("periph :", [format(px_058, '.3f')], [format(px_059, '.3f')], [format(px_060, '.3f')], [format(px_067, '.3f')], [format(px_068, '.3f')], [format(px_069, '.3f')], [format(px_076, '.3f')], [format(px_077, '.3f')], [format(px_078, '.3f')])
-                    print("periph :", [format(px_061, '.3f')], [format(px_062, '.3f')], [format(px_063, '.3f')], [format(px_070, '.3f')], [format(px_071, '.3f')], [format(px_072, '.3f')], [format(px_079, '.3f')], [format(px_080, '.3f')], [format(px_081, '.3f')])
-                except IndexError:
-                    print("pv_out: ", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]")
+                # try:
+                #     print(f"\n\ntimestep: t{t}")
+                #     print(f"center_of_fv: fv_x{x_coord+1}_y{y_coord+1}")
+                #     print("cofv_signal:", pixel_matrix[y_coord][x_coord])
+                #     print("periph :", [format(px_001, '.3f')], [format(px_002, '.3f')], [format(px_003, '.3f')], [format(px_010, '.3f')], [format(px_011, '.3f')], [format(px_012, '.3f')], [format(px_019, '.3f')], [format(px_020, '.3f')], [format(px_021, '.3f')])
+                #     print("periph :", [format(px_004, '.3f')], [format(px_005, '.3f')], [format(px_006, '.3f')], [format(px_013, '.3f')], [format(px_014, '.3f')], [format(px_015, '.3f')], [format(px_022, '.3f')], [format(px_023, '.3f')], [format(px_024, '.3f')])
+                #     print("periph :", [format(px_007, '.3f')], [format(px_008, '.3f')], [format(px_009, '.3f')], [format(px_016, '.3f')], [format(px_017, '.3f')], [format(px_018, '.3f')], [format(px_025, '.3f')], [format(px_026, '.3f')], [format(px_027, '.3f')])
+                #     print("focal  :", [format(px_028, '.3f')], [format(px_029, '.3f')], [format(px_030, '.3f')], [format(px_037, '.3f')], [format(px_038, '.3f')], [format(px_039, '.3f')], [format(px_046, '.3f')], [format(px_047, '.3f')], [format(px_048, '.3f')])
+                #     print("focal  :", [format(px_031, '.3f')], [format(px_032, '.3f')], [format(px_033, '.3f')], [format(px_040, '.3f')], [format(px_041, '.3f')], [format(px_042, '.3f')], [format(px_049, '.3f')], [format(px_050, '.3f')], [format(px_051, '.3f')])
+                #     print("focal  :", [format(px_034, '.3f')], [format(px_035, '.3f')], [format(px_036, '.3f')], [format(px_043, '.3f')], [format(px_044, '.3f')], [format(px_045, '.3f')], [format(px_052, '.3f')], [format(px_053, '.3f')], [format(px_054, '.3f')]) 
+                #     print("periph :", [format(px_055, '.3f')], [format(px_056, '.3f')], [format(px_057, '.3f')], [format(px_064, '.3f')], [format(px_065, '.3f')], [format(px_066, '.3f')], [format(px_073, '.3f')], [format(px_074, '.3f')], [format(px_075, '.3f')])
+                #     print("periph :", [format(px_058, '.3f')], [format(px_059, '.3f')], [format(px_060, '.3f')], [format(px_067, '.3f')], [format(px_068, '.3f')], [format(px_069, '.3f')], [format(px_076, '.3f')], [format(px_077, '.3f')], [format(px_078, '.3f')])
+                #     print("periph :", [format(px_061, '.3f')], [format(px_062, '.3f')], [format(px_063, '.3f')], [format(px_070, '.3f')], [format(px_071, '.3f')], [format(px_072, '.3f')], [format(px_079, '.3f')], [format(px_080, '.3f')], [format(px_081, '.3f')])
+                # except IndexError:
+                #     print("pv_out: ", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]", "[xxxxxxx]")
 
                 
                 signal_dictionary = {          # Create Signal Dictionary and set Pixel in Dictionary equal to Pixel Ref from Image Pixel Matrix
@@ -350,7 +402,7 @@ def main():
                     'px_081' : [pixel_matrix[y_coord+4][x_coord+4]],
                 }
 
-                print(signal_dictionary)
+                # print(signal_dictionary)
 
                 if SHOW_VF_IMAGE == 'ON':
                     # Create figure and axes
@@ -368,7 +420,6 @@ def main():
                 ''' Signal Loop '''
                 while signal_dictionary:
 
-                    print("STARTING WHILE LOOP...")
                     if SHOW_VF_IMAGE == 'ON':
                         # Create figure and axes
                         fig, ax = plt.subplots()
@@ -443,7 +494,7 @@ def main():
                             # Update signal_dictionary with which neurons to fire next
                             signal_dictionary.clear()
                             signal_dictionary.update(new_signal_dictionary)
-                            print("\nUPDATED SIGNAL PATH:", signal_dictionary)
+                            # print("\nUPDATED SIGNAL PATH:", signal_dictionary)
 
                             # Collect Bipolar Values for Ganglions to use as comparative BP Neighbor Averages
                             if bipolar_value_dictionary:
@@ -465,7 +516,7 @@ def main():
                                         gn = gn_direction_deciding_inputs[gn] if gn_direction_deciding_inputs[gn] else 0
                                         gn_list.append(gn)
                                     dd_signal_dictionary[dd] = gn_list
-                                print("\n>>>>> dd_signal_dictionary", dd_signal_dictionary)
+                                # print("\n>>>>> dd_signal_dictionary", dd_signal_dictionary)
                                 gn_direction_deciding_inputs.clear()
 
                                 ''' Choose Movement Direction or Stay in Place & Make Prediction '''
@@ -473,12 +524,12 @@ def main():
                                 dd_signal_dictionary.clear()
 
                                 if new_x_move == 0 and new_y_move == 0:
-                                    print("No Move - Making Prediction ... ")
+                                    # print("No Move - Making Prediction ... ")
                                     # signal_dictionary maintained
-                                    print("SIGNAL DICTIONARY", signal_dictionary)
+                                    # print("SIGNAL DICTIONARY", signal_dictionary)
                                     continue
                                 else:
-                                    print(f"New_x_move, New_y_move: {new_x_move}x, {new_y_move}y")
+                                    # print(f"New_x_move, New_y_move: {new_x_move}x, {new_y_move}y")
                                     # new_signal_dictory cleared so that signal_dictionary may be updated
                                     new_signal_dictionary.clear()
 
@@ -490,8 +541,8 @@ def main():
                                     t+=1
 
                                     path_dictionary[t] = [x_coord+1, y_coord+1]
-                                    print(f"\n\nMOVING FOCUS... NEW TARGET: {x_coord+1}x, {y_coord+1}y")
-                                    print("PATH DICTIONARY: ", path_dictionary)
+                                    # print(f"\n\nMOVING FOCUS... NEW TARGET: {x_coord+1}x, {y_coord+1}y")
+                                    # print("PATH DICTIONARY: ", path_dictionary)
 
                                     new_signal_dictionary = {                               # Put in NEW Signal Dictionary
                                         'px_001' : [pixel_matrix[y_coord-4][x_coord-4]],         # Section 1 - Top Left
@@ -587,15 +638,15 @@ def main():
                                     
                                     signal_dictionary.clear()
                                     signal_dictionary.update(new_signal_dictionary)         # Update 'signal_dictionary' w/ NEW Signal Dictionary
-                                    print(f"\n\nUPDATED SIGNAL DICTIONARY: {signal_dictionary}")
+                                    # print(f"\n\nUPDATED SIGNAL DICTIONARY: {signal_dictionary}")
                     
                     time.sleep(SLEEP_TIME)      # sleep before beginning next While Loop Iteration
 
 
-        print(f'MUTATION: {mutation}  -  SHAPE & PREDICTION: {shape_prediction_performance_list}')
+        # print(f'MUTATION: {mutation}  -  SHAPE & PREDICTION: {shape_prediction_performance_list}')
         mutation_performance[mutation] = shape_prediction_performance_list
 
-    print(f'MUTATION PERFORMANCE: {mutation_performance}')
+    # print(f'MUTATION PERFORMANCE: {mutation_performance}')
 
     mutation_fitness = {}
     for mutation in mutation_performance:
@@ -608,12 +659,14 @@ def main():
             if prediction[0] == prediction[1]:
 
                 prediction_certainty = prediction[2]
-                score = score + 10 + (prediction_certainty - 33.333)
+                score = score + 100 + (prediction_certainty - 33.333)
 
             else:
                 pass
 
-        mutation_fitness[mutation] = round(score, 5)
+        if score >= SCORE_MINIMUM:
+
+            mutation_fitness[mutation] = round(score, 5)
 
     print(mutation_fitness)
       
@@ -631,7 +684,7 @@ def generate_signal(neuron_from_signal_dictionary):   # nucleus
     excitation = sum(signal_input)
     # print("Neuron & Signal:", neuron_id, excitation)
 
-    if neuron_id.startswith("px") or neuron_id.startswith("pc") or neuron_id.startswith("pr") or neuron_id.startswith("fc") or neuron_id.startswith("bp"):        
+    if neuron_id.startswith("px") or neuron_id.startswith("pc") or neuron_id.startswith("pr") or neuron_id.startswith("fc") or neuron_id.startswith("bp")  or neuron_id.startswith("oc"):        
         if excitation >= ACTIVATION_THRESHOLD:
             post_synaptic_neighbors = starting_post_synaptic_neighbors_dictionary[neuron][0]
             synapse_values = starting_post_synaptic_neighbors_dictionary[neuron][1]
@@ -689,7 +742,7 @@ def chose_direction(neurons_firing):
         else:
             pass
 
-    print("\nDirection & Signal:", direction_neuron, highest_signal)
+    # print("\nDirection & Signal:", direction_neuron, highest_signal)
 
     new_x_move = direction_lookup[direction_neuron][0]
     new_y_move = direction_lookup[direction_neuron][1]

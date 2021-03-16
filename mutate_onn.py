@@ -4,13 +4,19 @@ import ast
 import copy
 from random import randrange
 
-NUM_OF_MUTATIONS = 8
-NUM_OF_MUTANTS = 9
-MUTATION_COUNT = 5
+NUM_OF_MUTATIONS = int(816*0.05)       # 816 Synapses from Occ. to SSNs
+SYNAPSE_MUTATION_VALUE = 0.01
+NUM_OF_MUTANTS = 50
+
+NEW_GEN = 1
+MUTATION_COUNT = 150
+
+# KEEP 5, 24, 48, 63, 87
+mutation = 'gen_1_mutation_0'
+
 
 
 ''' Load the Neural Network '''
-mutation = 'gen_1_mutation_5'
 
 with open(f"mutations/onn_map_{mutation}.json", "r") as file:
     starting_post_synaptic_neighbors_dictionary = file.read()
@@ -35,10 +41,10 @@ for _ in range(NUM_OF_MUTANTS):
     for neuron_to_mutate in mutation_list:
 
         synapse_index = randrange(12)    # random number b/t 0 & 12 (does not include 12)
-        onn_map_copy[neuron_to_mutate][1][synapse_index]-=0.05     # subtract 0.01 from synapse value
+        onn_map_copy[neuron_to_mutate][1][synapse_index]-=SYNAPSE_MUTATION_VALUE     # subtract 0.01 from synapse value
         print(f'MUTATION: {neuron_to_mutate}, {onn_map_copy[neuron_to_mutate][1][synapse_index]}')
 
-    name_of_file = f'onn_map_gen_1_mutation_{MUTATION_COUNT}'
+    name_of_file = f'onn_map_gen_{NEW_GEN}_mutation_{MUTATION_COUNT}_smv_{SYNAPSE_MUTATION_VALUE}'
     f = open(f"mutations/{name_of_file}.json", "x")
     f.write(str(onn_map_copy))
     f.close()
