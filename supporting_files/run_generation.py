@@ -649,6 +649,8 @@ def main():
     # print(f'MUTATION PERFORMANCE: {mutation_performance}')
 
     mutation_fitness = {}
+    top_10_mutations = {}
+    top_10_score_list = [0]
     for mutation in mutation_performance:
 
         all_predictions_list = mutation_performance[mutation]
@@ -668,8 +670,21 @@ def main():
 
             mutation_fitness[mutation] = round(score, 5)
 
-    print(mutation_fitness)
+            if any(top_score < score for top_score in top_10_score_list):
+                top_10_score_list.append(score)
+                top_10_score_list = sorted(top_10_score_list)
+                top_10_score_list.reverse()
+
+                if len(top_10_score_list) > 10:
+                    top_10_score_list.pop()
+
+                if score in top_10_score_list:
+                    top_10_mutations[mutation] = score
       
+
+    print("TOP 10 MUTATIONS", top_10_mutations)
+
+
 
 
 ''' Signal Functions '''

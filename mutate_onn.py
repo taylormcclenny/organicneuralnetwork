@@ -8,11 +8,11 @@ NUM_OF_MUTATIONS = int(816*0.05)       # 816 Synapses from Occ. to SSNs
 SYNAPSE_MUTATION_VALUE = 0.01
 NUM_OF_MUTANTS = 50
 
-NEW_GEN = 1
+NEW_GEN = 2
 MUTATION_COUNT = 150
 
 # KEEP 5, 24, 48, 63, 87
-mutation = 'gen_1_mutation_0'
+mutation = 'gen_1_mutation_183_smv_0.01'
 
 
 
@@ -41,7 +41,11 @@ for _ in range(NUM_OF_MUTANTS):
     for neuron_to_mutate in mutation_list:
 
         synapse_index = randrange(12)    # random number b/t 0 & 12 (does not include 12)
-        onn_map_copy[neuron_to_mutate][1][synapse_index]-=SYNAPSE_MUTATION_VALUE     # subtract 0.01 from synapse value
+
+        # subtract SYNAPSE_MUTATION_VALUE from synapse value
+        mutated_synapse_value = round((onn_map_copy[neuron_to_mutate][1][synapse_index] - SYNAPSE_MUTATION_VALUE), 5)
+        onn_map_copy[neuron_to_mutate][1][synapse_index] = mutated_synapse_value
+
         print(f'MUTATION: {neuron_to_mutate}, {onn_map_copy[neuron_to_mutate][1][synapse_index]}')
 
     name_of_file = f'onn_map_gen_{NEW_GEN}_mutation_{MUTATION_COUNT}_smv_{SYNAPSE_MUTATION_VALUE}'
