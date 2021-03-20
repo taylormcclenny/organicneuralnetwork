@@ -23,7 +23,7 @@ for gen_report in gen_reports_list:
 
     gen_number = gen_report.split('gen_')[1].split('_report')[0]
     if gen_number is not '':
-        gen_number_list.append(gen_number)
+        gen_number_list.append(int(gen_number))
     unique_gen_number_set = set(gen_number_list)
     ordered_gen_number_list = sorted(unique_gen_number_set)
     

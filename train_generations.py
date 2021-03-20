@@ -13,25 +13,30 @@ from matplotlib.collections import PatchCollection
 from PIL import Image
 import concurrent.futures
 
-NUM_OF_GENERATIONS_TO_RUN = 2
+NUM_OF_GENERATIONS_TO_RUN = 10
 SCORE_MINIMUM = 500
 
-# SYNAPTIC_MUTATION_VALUES = [0.25, 0.125, 0.01]
-SYNAPTIC_MUTATION_VALUES = [0.125, 0.06, 0.01]
-NUM_CHILDREN_PER_SMV_PER_PARENT = 10                # ex. 10 children * 3 smv * 10 parents = 300 new children
+''' IMPORTANT TESTING NOTE:  Synapses mutations are currently set to a minimum of ZERO. (line 172) '''
+SYNAPTIC_MUTATION_VALUES = [0.50, 0.25, 0.125, 0.063, 0.031, 0.01]
+# SYNAPTIC_MUTATION_VALUES = [0.125, 0.06, 0.01]
+# SYNAPTIC_MUTATION_VALUES = [0.1, 0.05, 0.01]
+NUM_CHILDREN_PER_SMV_PER_PARENT = 5                # ex. 10 children * 3 smv * 10 parents = 300 new children
 NUM_OF_MUTATIONS = int(816*0.05)       # 816 Synapses from Occ. to SSNs (ex. 816*0.05 = 5%)
 
 SHOW_VF_IMAGE = 'OFF'
 PAUSE_TIME = 0.25
 
 ACTIVATION_THRESHOLD = 0      # For now, all neurons share this AT. Ultimately it should be neuron-specific & self-tuned
-SLEEP_TIME = 0.001
+SLEEP_TIME = 0.0001
 
 
 ''' Helper Dictionaries & Lists '''
 
-shape_list = ['triangle', 'circle', 'square']
-starting_positions = [(5,5), (14,5), (5,14), (14,14)]
+# shape_list = ['triangle', 'circle', 'square']
+shape_list = ['brain', 'cup', 'kettlebell']
+
+# starting_positions = [(5,5), (14,5), (5,14), (14,14)]
+starting_positions = [(5,5), (20,5), (5,20), (20,20)]
 
 # Shape Specific Neuron list for calculating classification
 shape_specific_neurons = ['ss_001', 'ss_002', 'ss_003', 'ss_004', 'ss_005', 'ss_006', 'ss_007', 'ss_008', 'ss_009', 'ss_010', 'ss_011', 'ss_012']
@@ -110,7 +115,7 @@ def main():
 
             gen_number = gen_report.split('gen_')[1].split('_report')[0]
             if gen_number is not '':
-                gen_number_list.append(gen_number)
+                gen_number_list.append(int(gen_number))
             unique_gen_number_set = set(gen_number_list)
             ordered_gen_number_list = sorted(unique_gen_number_set)
             
@@ -148,9 +153,10 @@ def main():
 
                 for _ in range(NUM_CHILDREN_PER_SMV_PER_PARENT):
 
-                    ''' Create an deep copy of the Parent NN '''
+                    ''' Create a deep copy of the Parent NN '''
                     onn_map_copy = copy.deepcopy(onn_map)
 
+                    # Create list of Neurons to Mutate
                     mutation_list = []
                     for _ in range(NUM_OF_MUTATIONS):
                         
@@ -158,16 +164,18 @@ def main():
                         neuron = neuron.zfill(3)
                         mutation_list.append(f'oc_{neuron}')                    # currently limited to Occ->Shape Specific Neurons
 
-                    # print(mutation_list)
-
-
+                    # Mutate a random Synapse of the choosen Neuron
                     for neuron_to_mutate in mutation_list:
 
                         synapse_index = randrange(12)    # random number b/t 0 & 12 (does not include 12)
-
-                        # subtract SYNAPSE_MUTATION_VALUE from synapse value
                         mutated_synapse_value = round((onn_map_copy[neuron_to_mutate][1][synapse_index] - synaptic_mutation_value), 5)
-                        onn_map_copy[neuron_to_mutate][1][synapse_index] = mutated_synapse_value
+
+                        # Use the Randomly Mutated Synapse Value if the Value is positive,
+                        # Otherwise, if negative or Zero, set it to Zero
+                        if mutated_synapse_value > 0:
+                            onn_map_copy[neuron_to_mutate][1][synapse_index] = mutated_synapse_value
+                        else:
+                            onn_map_copy[neuron_to_mutate][1][synapse_index] = 0
 
                         # print(f'MUTATION: {neuron_to_mutate}, {onn_map_copy[neuron_to_mutate][1][synapse_index]}')
 
@@ -206,30 +214,65 @@ def main():
         unique_smv_set = set(smv_list)
         ordered_smv_list = sorted(unique_smv_set)
 
+
+        ''' RETURN TO THIS CODE & MAKE DYNAMIC '''
+        # # Order all mutation files by SMV (descending)
+        # mutations_ordered_by_smv = []
+        # highest_smv = []
+        # moderate_smv = []
+        # lowest_smv = []
+        # else_smv = []
+        # for mutation in mutation_list:
+        #     character_length = len(mutation)
+        #     name_with_no_file = mutation[:character_length - 5]
+        #     smv = name_with_no_file.partition('smv_')[2]
+        #     if smv == ordered_smv_list[2]:
+        #         highest_smv.append(mutation)
+        #     elif smv == ordered_smv_list[1]:
+        #         moderate_smv.append(mutation)
+        #     elif smv == ordered_smv_list[0]:
+        #         lowest_smv.append(mutation)
+        #     else: 
+        #         else_smv.append(mutation)
+
+        # mutations_ordered_by_smv = highest_smv + moderate_smv + lowest_smv + else_smv
+        # print(mutations_ordered_by_smv)
+
+
+        ''' TEMPORARY '''
         # Order all mutation files by SMV (descending)
         mutations_ordered_by_smv = []
-        highest_smv = []
-        moderate_smv = []
-        lowest_smv = []
+        point_5_smv = []
+        point_25_smv = []
+        point_125_smv = []
+        point_063_smv = []
+        point_031_smv = []
+        point_01_smv = []
         else_smv = []
         for mutation in mutation_list:
             character_length = len(mutation)
             name_with_no_file = mutation[:character_length - 5]
             smv = name_with_no_file.partition('smv_')[2]
-            if smv == ordered_smv_list[2]:
-                highest_smv.append(mutation)
+            if smv == ordered_smv_list[5]:
+                point_5_smv.append(mutation)
+            elif smv == ordered_smv_list[4]:
+                point_25_smv.append(mutation)
+            elif smv == ordered_smv_list[3]:
+                point_125_smv.append(mutation)
+            elif smv == ordered_smv_list[2]:
+                point_063_smv.append(mutation)
             elif smv == ordered_smv_list[1]:
-                moderate_smv.append(mutation)
+                point_031_smv.append(mutation)
             elif smv == ordered_smv_list[0]:
-                lowest_smv.append(mutation)
+                point_01_smv.append(mutation)
             else: 
                 else_smv.append(mutation)
 
-        mutations_ordered_by_smv = highest_smv + moderate_smv + lowest_smv + else_smv
+        mutations_ordered_by_smv = point_5_smv + point_25_smv + point_125_smv + point_063_smv + point_031_smv + point_01_smv + else_smv
         print(mutations_ordered_by_smv)
 
 
-        ''' Begin: Mutation > Shape (x3 ) > Starting Position (x8) >> Repeat '''
+        ''' BEGIN VISION TESTING: Mutation (x1) > Shape (x3) > Starting Position (x4) >> Repeat '''
 
         mutation_run_count = 1
         mutation_performance = {}
@@ -251,7 +294,12 @@ def main():
             for shape in shape_list:
                 
                 ''' Read the Image '''
-                img = Image.open(f"img_{shape}_324.png").convert('LA')
+                # FOR SHAPES
+                # img = Image.open(f"img_{shape}_324.png").convert('LA')
+
+                # FOR OBJECTS
+                img = Image.open(f"{shape}_24.jpg").convert('LA')
+
                 height, width = img.size
                 # total_rows = height
                 # total_colums = width
@@ -919,24 +967,44 @@ def make_prediction(ssn_signal_dictionary):
     for ssn_id in ssn_signal_dictionary:
         ssn_sums[ssn_id] = sum(ssn_signal_dictionary[ssn_id])
 
-    triangle_value = 0
-    circle_value = 0
-    square_value = 0
+    # triangle_value = 0
+    # circle_value = 0
+    # square_value = 0
+    # for ssn_id in ssn_sums:
+    #     if ssn_id in ('ss_001', 'ss_002', 'ss_003', 'ss_004'):
+    #         triangle_value+=ssn_sums[ssn_id]
+    #     elif ssn_id in ('ss_005', 'ss_006', 'ss_007', 'ss_008'):
+    #         circle_value+=ssn_sums[ssn_id]
+    #     else:
+    #         square_value+=ssn_sums[ssn_id]
+
+    # shape_value_list = [triangle_value, circle_value, square_value]
+    # shape_list = ['triangle', 'circle', 'square']
+
+    # prediction_value = max(triangle_value, circle_value, square_value)
+    # index = shape_value_list.index(prediction_value)
+    # prediction = shape_list[index]
+    # all_values = [triangle_value, circle_value, square_value]
+
+    brain_value = 0
+    cup_value = 0
+    kettlebell_value = 0
     for ssn_id in ssn_sums:
         if ssn_id in ('ss_001', 'ss_002', 'ss_003', 'ss_004'):
-            triangle_value+=ssn_sums[ssn_id]
+            brain_value+=ssn_sums[ssn_id]
         elif ssn_id in ('ss_005', 'ss_006', 'ss_007', 'ss_008'):
-            circle_value+=ssn_sums[ssn_id]
+            cup_value+=ssn_sums[ssn_id]
         else:
-            square_value+=ssn_sums[ssn_id]
+            kettlebell_value+=ssn_sums[ssn_id]
 
-    shape_value_list = [triangle_value, circle_value, square_value]
-    shape_list = ['triangle', 'circle', 'square']
+    shape_value_list = [brain_value, cup_value, kettlebell_value]
+    shape_list = ['brain', 'cup', 'kettlebell']
 
-    prediction_value = max(triangle_value, circle_value, square_value)
+    prediction_value = max(brain_value, cup_value, kettlebell_value)
     index = shape_value_list.index(prediction_value)
     prediction = shape_list[index]
-    all_values = [triangle_value, circle_value, square_value]
+    all_values = [brain_value, cup_value, kettlebell_value]
+
 
     prediction_certainty = round(prediction_value / sum(all_values), 5)*100
 
