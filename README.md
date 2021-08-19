@@ -21,7 +21,7 @@ Different cells have different functions - as we saw with the coupling of the Bi
 
 Below is a print out of what the AI is seeing as it looks over an image. With each signal propogation, it decides how to move its gaze to see more of what's interesting in the picture.
 
-![scanning_image](https://github.com/taylormcclenny/organicneuralnetwork/blob/master/run_onn_v1.mp4)
+![scanning_image](https://github.com/taylormcclenny/organicneuralnetwork/blob/master/run_onn_v1.gif)
 
 
 Now understanding a couple simple principles of the ONN, let's look at the first major goal/task of this Visual ONN and a sample architecture to achieve this goal.
