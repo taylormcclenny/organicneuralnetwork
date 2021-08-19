@@ -20,6 +20,8 @@ Here 9 Rods concurrently send their signals (all, always positive values) to 2 B
 Different cells have different functions - as we saw with the coupling of the Bipolar Cells (as Rods always send postive signals) - but this simple summation of excitatory and inhibitory signals and this principle of "fire or don't" is foundational to how all cells work in both Biology and the ONN.
 
 Below is a print out of what the AI is seeing as it looks over an image. With each signal propogation, it decides how to move its gaze to see more of what's interesting in the picture.
+![field_of_vision](https://github.com/taylormcclenny/organicneuralnetwork/blob/master/supporting_files/images/field_of_vision_terminal.png)
+
 
 Now understanding a couple simple principles of the ONN, let's look at the first major goal/task of this Visual ONN and a sample architecture to achieve this goal.
 
